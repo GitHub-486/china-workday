@@ -1,9 +1,9 @@
 ﻿version: "3.8"
 
 services:
-  holiday-postgres:
+  china-workday-db:
     image: postgres:16-alpine
-    container_name: holiday-postgres
+    container_name: china-workday-db
     restart: unless-stopped
     environment:
       TZ: Asia/Shanghai
@@ -33,14 +33,14 @@ services:
     container_name: china-workday
     restart: unless-stopped
     depends_on:
-      holiday-postgres:
+      china-workday-db:
         condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: docker
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
-      DB_URL: jdbc:postgresql://holiday-postgres:5432/${DB_NAME}
+      DB_URL: jdbc:postgresql://china-workday-db:5432/${DB_NAME}
       CHINA_WORKDAY_API_TOKEN: ${CHINA_WORKDAY_API_TOKEN:?must be set}
       CHINA_WORKDAY_CRAWL_ENABLED: ${CHINA_WORKDAY_CRAWL_ENABLED:-true}
       CHINA_WORKDAY_CRAWL_ON_STARTUP: ${CHINA_WORKDAY_CRAWL_ON_STARTUP:-true}

@@ -1,0 +1,11 @@
+# 数据库账号初始化清单（声明式，由 init-user-db.sh 读取并循环创建）
+# 每个条目 = 一个独立数据库 + 其专属业务账号（最小权限，非 superuser）
+#   name:         数据库名
+#   app_user:     业务账号（应用连接用）
+#   password_env: 存放该账号密码的【环境变量名】。生产由 Secret 注入，开发放 .env
+#                 密码不在此文件/脚本中硬编码；变量值后勿加行尾注释
+#   readonly:     可选。true = 只读账号；默认 false = 读写（允许应用建表）
+databases:
+  - name: work
+    app_user: work
+    password_env: DB_PASSWORD
