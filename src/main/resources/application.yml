@@ -1,0 +1,33 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: china-workday
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:127.0.0.1}:${DB_PORT:5432}/${DB_NAME:work}
+    username: ${DB_USER:work}
+    password: ${DB_PASSWORD:work}
+  sql:
+    init:
+      mode: always
+
+# log4j2 配置请见 log4j2-spring.xml
+
+# 应用配置
+china-workday:
+  app:
+    # L4 凭据：管理/写/导出接口鉴权 token（环境变量 CHINA_WORKDAY_API_TOKEN 注入）
+    api-token: ${CHINA_WORKDAY_API_TOKEN:wk}
+  crawl:
+    enabled: ${CHINA_WORKDAY_CRAWL_ENABLED:true}
+    on-startup: ${CHINA_WORKDAY_CRAWL_ON_STARTUP:true}
+    search-url: ${CHINA_WORKDAY_CRAWL_SEARCH_URL:https://sousuo.www.gov.cn/search-gov/data}
+    search-keyword: ${CHINA_WORKDAY_CRAWL_SEARCH_KEYWORD:部分节假日安排的通知}
+    search-page-size: 20
+    year-back-offset: 1
+    year-forward-offset: 1
+    list-url: ${CHINA_WORKDAY_CRAWL_LIST_URL:https://www.gov.cn/zhengce/zhengceku/}
+    cron: ${CHINA_WORKDAY_CRAWL_CRON:0 0 8 * * *}
+    timeout-millis: 10000
+    max-concurrent: 1

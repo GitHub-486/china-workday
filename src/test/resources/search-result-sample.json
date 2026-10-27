@@ -1,0 +1,23 @@
+{
+  "code": 200,
+  "msg": "操作成功",
+  "searchVO": {
+    "catMap": {
+      "gongwen": {
+        "totalCount": 20,
+        "currentNum": 2,
+        "listVO": [
+          {"title": "国务院办公厅关于2026年<em>部分</em><em>节假日</em><em>安排</em><em>的</em><em>通知</em>", "url": "https://www.gov.cn/zhengce/zhengceku/202511/content_7047091.htm"},
+          {"title": "某省关于其他事项的通知", "url": "https://www.gov.cn/zhengce/content_0000001.htm"}
+        ]
+      },
+      "gongbao": {
+        "totalCount": 20,
+        "currentNum": 1,
+        "listVO": [
+          {"title": "国务院办公厅关于2025年<em>部分</em><em>节假日</em><em>安排</em><em>的</em><em>通知</em>", "url": "https://www.gov.cn/gongbao/2024/issue_11726/202411/content_6989767.html"}
+        ]
+      }
+    }
+  }
+}

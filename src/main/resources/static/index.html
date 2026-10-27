@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中国假期服务 · 接口调试台</title>
+    <style>
+        :root { --brand: #1f6feb; --danger: #cf222e; --ok: #1a7f37; --line: #d0d7de; --bg: #f6f8fa; --side: #1f2328; --side-hover: #33383f; }
+        * { box-sizing: border-box; }
+        html, body { height: 100%; }
+        body { margin: 0; font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; background: var(--bg); color: #1f2328; }
+        .layout { display: flex; min-height: 100vh; }
+        /* 左侧菜单 */
+        .sidebar { width: 220px; flex-shrink: 0; background: var(--side); color: #e6e6e6; padding: 16px 0; }
+        .sidebar .brand { padding: 4px 20px 16px; font-weight: 700; font-size: 16px; color: #fff; border-bottom: 1px solid #3d434b; margin-bottom: 10px; }
+        .menu-group { padding: 10px 0 4px; font-size: 12px; color: #9aa0a6; padding-left: 20px; letter-spacing: 1px; }
+        .menu-item { display: block; width: 100%; text-align: left; padding: 10px 20px; border: none; background: none; color: #e6e6e6; font-size: 14px; cursor: pointer; }
+        .menu-item:hover { background: var(--side-hover); }
+        .menu-item.active { background: var(--brand); color: #fff; }
+        .menu-item .method { font-size: 11px; padding: 1px 6px; border-radius: 4px; margin-right: 8px; color: #fff; background: #6e7781; vertical-align: middle; }
+        .menu-item .method.get { background: #1a7f37; }
+        .menu-item .method.post { background: #bf8700; }
+        .menu-item .lock { color: #d29922; float: right; font-size: 12px; }
+        /* 右侧内容 */
+        .main { flex: 1; padding: 24px 28px; }
+        .main h1 { font-size: 20px; margin: 0 0 4px; }
+        .subtitle { color: #57606a; font-size: 13px; margin-bottom: 20px; }
+        .card { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 18px; margin-bottom: 16px; }
+        .card .api-line { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+        .card .method-badge { font-size: 11px; padding: 3px 8px; border-radius: 4px; color: #fff; font-weight: 700; }
+        .card .method-badge.get { background: #1a7f37; }
+        .card .method-badge.post { background: #bf8700; }
+        .card h3 { font-size: 15px; margin: 0; }
+        .card .path { font-family: Consolas, monospace; font-size: 13px; color: #57606a; }
+        .card .desc { font-size: 13px; color: #57606a; margin: 6px 0 12px; }
+        .params { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+        .params label { font-weight: 600; font-size: 13px; }
+        input, select, button { padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px; font-size: 14px; }
+        input:focus { outline: 2px solid var(--brand); }
+        button.call { cursor: pointer; border: none; background: var(--brand); color: #fff; }
+        button.call:active { background: #1158c7; }
+        button.secondary { background: #eff1f3; color: #1f2328; border: 1px solid var(--line); cursor: pointer; }
+        .result { display: none; background: #f6f8fa; border: 1px solid var(--line); border-radius: 6px; padding: 12px; font-family: Consolas, monospace; font-size: 13px; margin-top: 8px; white-space: pre-wrap; word-break: break-all; max-height: 320px; overflow: auto; }
+        .result.show { display: block; }
+        .result .meta { color: var(--ok); margin-bottom: 6px; }
+        .result .meta.err { color: var(--danger); }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; }
+        th { background: var(--bg); }
+        .badge { padding: 2px 8px; border-radius: 999px; font-size: 12px; color: #fff; }
+        .badge.holiday { background: var(--danger); }
+        .badge.workday { background: var(--ok); }
+        .badge.rest { background: #6e7781; }
+    </style>
+</head>
+<body>
+<div class="layout">
+    <nav class="sidebar">
+        <div class="brand">中国假期服务</div>
+        <div class="menu-group">公开接口</div>
+        <button class="menu-item" data-panel="pub" id="m-thru">
+            <span class="method get">GET</span> 上班日查询
+        </button>
+        <div class="menu-group">管理接口</div>
+        <button class="menu-item" data-panel="adm" id="m-adm">
+            <span class="method post">POST</span> 抓取/导出 <span class="lock">🔒</span>
+        </button>
+    </nav>
+
+    <main class="main">
+        <h1>接口调试台</h1>
+        <div class="subtitle">按左侧菜单选择接口，填写参数后点击调用。</div>
+
+        <!-- ===== 公开接口面板 ===== -->
+        <div id="panel-pub" class="panel">
+            <div class="card">
+                <div class="api-line">
+                    <span class="method-badge get">GET</span>
+                    <h3>节假日试算</h3>
+                </div>
+                <div class="path">/workday/api/holiday/is-workday</div>
+                <div class="desc">选择一个日期，快速判断是否上班日。</div>
+                <div class="params">
+                    <label>日期</label>
+                    <input type="date" id="p-date">
+                    <button class="call" id="b-date">判断</button>
+                </div>
+                <div class="result" id="r-date"></div>
+            </div>
+
+            <div class="card">
+                <div class="api-line">
+                    <span class="method-badge get">GET</span>
+                    <h3>查询某月节假日明细</h3>
+                </div>
+                <div class="path">/workday/api/holiday/month?year=&amp;month=</div>
+                <div class="desc">返回指定年、月的节假日与调休安排。</div>
+                <div class="params">
+                    <label>年</label><input type="number" id="q-year" value="2026" list="yearList" style="width:90px">
+                    <label>月</label>
+                    <select id="q-month">
+                        <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option>
+                        <option value="4">4月</option><option value="5">5月</option><option value="6">6月</option>
+                        <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option>
+                        <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
+                    </select>
+                    <button class="call" id="b-month">调用</button>
+                </div>
+                <div class="result" id="r-month"></div>
+            </div>
+
+            <div class="card">
+                <div class="api-line">
+                    <span class="method-badge get">GET</span>
+                    <h3>查询某年全部节假日</h3>
+                </div>
+                <div class="path">/workday/api/holiday/year?year=</div>
+                <div class="desc">返回指定年份所有节假日与调休记录。</div>
+                <div class="params">
+                    <label>年</label><input type="number" id="y-year" value="2026" list="yearList" style="width:90px">
+                    <button class="call" id="b-year">调用</button>
+                </div>
+                <div class="result" id="r-year"></div>
+            </div>
+        </div>
+
+        <!-- ===== 管理接口面板 ===== -->
+        <div id="panel-adm" class="panel" style="display:none">
+            <div class="card">
+                <div class="api-line">
+                    <span class="method-badge post">KEY</span>
+                    <h3>X-API-Token 设置</h3>
+                </div>
+                <div class="desc">管理接口需在请求头携带 X-API-Token。在此设置后保存到浏览器本地，调用时自动附带。</div>
+                <div class="params">
+                    <input type="password" id="adm-token" placeholder="X-API-Token" style="width:300px">
+                    <button class="call secondary" id="b-token">保存</button>
+                </div>
+                <div class="result" id="r-token"></div>
+            </div>
+
+            <div class="card">
+                <div class="api-line">
+                    <span class="method-badge post">POST</span>
+                    <h3>手动触发抓取 🔒</h3>
+                </div>
+                <div class="path">/workday/api/admin/crawl</div>
+                <div class="desc">从 gov.cn 官方搜索接口拉取近期年份节假日通知并入库。</div>
+                <div class="params">
+                    <button class="call" id="b-crawl">调用</button>
+                </div>
+                <div class="result" id="r-crawl"></div>
+            </div>
+
+            <div class="card">
+                <div class="api-line">
+                    <span class="method-badge get">GET</span>
+                    <h3>导出当年 JSON 🔒</h3>
+                </div>
+                <div class="path">/workday/api/holiday/export?year=</div>
+                <div class="desc">将某年节假日数据导出为 {year}.json，供离线引用。</div>
+                <div class="params">
+                    <label>年</label><input type="number" id="e-year" value="2026" list="yearList" style="width:90px">
+                    <button class="call secondary" id="b-export">导出文件</button>
+                </div>
+                <div class="result" id="r-export"></div>
+            </div>
+        </div>
+
+        <datalist id="yearList">
+            <option value="2027"></option>
+            <option value="2026"></option>
+            <option value="2025"></option>
+            <option value="2024"></option>
+            <option value="2023"></option>
+            <option value="2022"></option>
+            <option value="2021"></option>
+            <option value="2020"></option>
+        </datalist>
+    </main>
+</div>
+
+<script>
+    const API_TOK = 'cw_token';
+    const admTokenInput = document.getElementById('adm-token');
+
+    // Token 统一从 localStorage 读取；注入到管理接口的 X-API-Token
+    function token() { return localStorage.getItem(API_TOK) || ''; }
+    admTokenInput.value = token();
+
+    document.getElementById('b-token').onclick = () => {
+        localStorage.setItem(API_TOK, admTokenInput.value.trim());
+        const el = document.getElementById('r-token');
+        el.classList.add('show');
+        el.innerHTML = '<div class="meta">Token 已保存</div>';
+    };
+
+    async function api(url, opts = {}) {
+        const headers = { ...(opts.headers || {}) };
+        if (opts.auth !== false) headers['X-API-Token'] = token();
+        const res = await fetch(url, { ...opts, headers });
+        return res;
+    }
+
+    async function showResult(id, res) {
+        const el = document.getElementById(id);
+        el.classList.add('show');
+        let text;
+        try {
+            const contentType = res.headers.get('content-type') || '';
+            if (contentType.includes('application/json')) {
+                const data = await res.json();
+                text = `HTTP ${res.status}  OK\n` + JSON.stringify(data, null, 2);
+            } else {
+                text = `HTTP ${res.status}\n` + await res.text();
+            }
+        } catch (e) {
+            text = `HTTP ${res.status}\n（响应解析失败：${e.message})`;
+        }
+        el.textContent = text;
+    }
+
+    // ===== 左侧菜单切换 =====
+    const items = document.querySelectorAll('.menu-item');
+    function activate(id) {
+        items.forEach(m => m.classList.remove('active'));
+        const btn = document.getElementById(id);
+        btn.classList.add('active');
+        const panel = 'panel-' + btn.dataset.panel;
+        document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
+        document.getElementById(panel).style.display = 'block';
+    }
+    document.getElementById('m-thru').onclick = () => activate('m-thru');
+    document.getElementById('m-adm').onclick = () => activate('m-adm');
+    activate('m-thru');
+
+    // ===== 公共查询接口 =====
+    document.getElementById('b-date').onclick = async () => {
+        const d = document.getElementById('p-date').value;
+        const el = document.getElementById('r-date');
+        if (!d) { el.classList.add('show'); el.innerHTML = '请选择日期'; return; }
+        const res = await api('/workday/api/holiday/is-workday?date=' + d, { auth: false });
+        const body = await res.json();
+        el.classList.add('show');
+        if (body.code !== 200) {
+            el.innerHTML = `<div class="meta err">${body.message || '请求失败'}</div>`;
+            return;
+        }
+        const dd = body.data;
+        el.innerHTML = `<table><thead><tr><th>日期</th><th>是否上班</th><th>类型</th><th>节日名称</th></tr></thead>`
+            + `<tbody><tr><td>${dd.date}</td><td>${dd.isWorkday ? '✅ 上班日' : '❌ 休息日'}</td>`
+            + `<td><span class="badge ${dd.dayType === 'HOLIDAY' ? 'holiday' : dd.dayType === 'WORKDAY' ? 'workday' : 'rest'}">${dd.dayType === 'HOLIDAY' ? '放假' : dd.dayType === 'WORKDAY' ? '调休上班' : '正常休息'}</span></td>`
+            + `<td>${dd.holidayName || '—'}</td></tr></tbody></table>`;
+    };
+
+    function renderTable(el, records) {
+        if (!records || records.length === 0) {
+            el.classList.add('show');
+            el.innerHTML = '<div class="meta">暂无数据</div>';
+            return;
+        }
+        el.classList.add('show');
+        el.innerHTML = `<div class="meta">共 ${records.length} 条记录</div>`
+            + `<table><thead><tr><th>日期</th><th>名称</th><th>类型</th></tr></thead><tbody>`
+            + records.map(r => `<tr><td>${r.holidayDate || r.date}</td><td>${r.holidayName || r.name || '—'}</td>`
+                + `<td><span class="badge ${r.dayType === 'HOLIDAY' ? 'holiday' : 'workday'}">${r.dayType === 'HOLIDAY' ? '放假' : '调休上班'}</span></td></tr>`).join('')
+            + `</tbody></table>`;
+    }
+
+    document.getElementById('b-month').onclick = async () => {
+        const y = document.getElementById('q-year').value;
+        const m = document.getElementById('q-month').value;
+        const res = await api(`/workday/api/holiday/month?year=${y}&month=${m}`, { auth: false });
+        const body = await res.json();
+        renderTable(document.getElementById('r-month'), body.data);
+    };
+
+    document.getElementById('b-year').onclick = async () => {
+        const y = document.getElementById('y-year').value;
+        const res = await api(`/workday/api/holiday/year?year=${y}`, { auth: false });
+        const body = await res.json();
+        renderTable(document.getElementById('r-year'), body.data);
+    };
+
+    // ===== 管理接口 =====
+    document.getElementById('b-crawl').onclick = async () => {
+        const el = document.getElementById('r-crawl');
+        const res = await api('/workday/api/admin/crawl', { method: 'POST' });
+        if (res.status === 401) {
+            el.classList.add('show');
+            el.innerHTML = '<div class="meta err">401 未授权：请在本页上方设置正确的 X-API-Token</div>';
+            return;
+        }
+        await showResult('r-crawl', res);
+    };
+
+    document.getElementById('b-export').onclick = async () => {
+        const el = document.getElementById('r-export');
+        const y = document.getElementById('e-year').value;
+        const res = await api(`/workday/api/holiday/export?year=${y}`);
+        if (res.status === 401) {
+            el.classList.add('show');
+            el.innerHTML = '<div class="meta err">401 未授权：请在本页上方设置正确的 X-API-Token</div>';
+            return;
+        }
+        if (!res.ok) { el.classList.add('show'); el.textContent = '导出失败 HTTP ' + res.status; return; }
+        const blob = await res.blob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `${y}.json`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+        el.classList.add('show');
+        el.textContent = `已导出 ${y}.json`;
+    };
+</script>
+</body>
+</html>

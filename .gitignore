@@ -1,16 +1,20 @@
-# Compiled class file
+# ===== Java 编译产物 =====
 *.class
 
-# Log file
+# ===== 日志文件 =====
 *.log
 
-# BlueJ files
+# ===== 虚拟机崩溃日志 =====
+# see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+
+# ===== BlueJ 文件 =====
 *.ctxt
 
-# Mobile Tools for Java (J2ME)
+# ===== Mobile Tools for Java (J2ME) =====
 .mtj.tmp/
 
-# Package Files #
+# ===== 归档包 / 发布包 =====
 *.jar
 *.war
 *.nar
@@ -19,5 +23,20 @@
 *.tar.gz
 *.rar
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
+# ===== Maven Wrapper 例外：保留 wrapper jar =====
+!.mvn/wrapper/maven-wrapper.jar
+
+# ===== 构建输出目录 =====
+target/
+
+# ===== IDE / 编辑器 =====
+.idea/
+*.iml
+.vscode/
+
+# ===== 操作系统文件 =====
+.DS_Store
+
+# ===== 环境变量文件 =====
+.env
+
