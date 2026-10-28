@@ -2,7 +2,7 @@
 
 - 日期：2026-10-22
 - 状态：待用户审阅
-- 模块坐标：`ict:china-workday:1.0.0`，包名 `ict.china.workday`
+- 模块坐标：`com:china-workday:1.0.0`，包名 `com.ict.workday`
 
 ## 1. 背景与目标
 
@@ -18,10 +18,10 @@
 
 | 项 | 值 |
 |---|---|
-| groupId | `ict` |
+| groupId | `com` |
 | artifactId | `china-workday` |
 | version | `1.0.0` |
-| 包名 | `ict.china.workday` |
+| 包名 | `com.ict.workday` |
 | 发布仓库 | 阿里云效 Packages（`distributionManagement`，待填认证） |
 | 代码仓库 | Gitee |
 
@@ -46,7 +46,7 @@ china-workday/
 │       ├── schema.sql              # 由 application.yml 的 sql.init 执行
 │       └── init-user-db.sh         # 建库建账号（复用 rushi-aci 模式）
 └── src/main/
-    ├── java/ict/china/workday/
+    ├── java/com/china/workday/
     │   ├── ChinaWorkdayApplication.java   # @SpringBootApplication @ConfigurationPropertiesScan @EnableScheduling
     │   ├── config/
     │   │   ├── AppProperties.java         # api-token、数据源无关配置
