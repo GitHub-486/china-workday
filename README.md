@@ -1,6 +1,6 @@
 # china-workday
 
-中国节假日 / 工作日判断公共服务（Spring Boot 3.2.5 / Java 17）。
+法定节假日 / 中国节假日 / 工作日判断公共服务（Spring Boot 3.2.5 / Java 17）。
 
 - **坐标**：`ict:china-workday:1.0.0`，包名 `ict.china.workday`
 - **功能**：从国务院官方搜索数据接口（gov.cn「政策文件库」）获取「部分节假日安排的通知」，解析放假与调休日期入库（PostgreSQL），提供 HTTP 接口判断某日是否上班日，支持按年份导出 JSON 离线使用。
