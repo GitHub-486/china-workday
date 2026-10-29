@@ -5,6 +5,7 @@ import com.ict.workday.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -16,6 +17,7 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import javax.sql.DataSource;
 
 @Configuration
+@EnableScheduling
 @ConditionalOnClass(HolidayRepository.class)
 @EnableConfigurationProperties({AppProperties.class, CrawlProperties.class})
 public class ChinaWorkdayAutoConfiguration {
