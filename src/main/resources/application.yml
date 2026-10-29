@@ -10,8 +10,7 @@ spring:
     password: ${DB_PASSWORD:work}
   sql:
     init:
-      mode: always
-      schema-locations: classpath:sql/schema-postgres.sql
+      mode: never
 
 # log4j2 配置请见 log4j2-spring.xml
 
