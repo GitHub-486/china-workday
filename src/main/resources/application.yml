@@ -11,6 +11,7 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration/pg
+    table: china_workday_flyway_schema
 
 # log4j2 配置请见 log4j2-spring.xml
 
