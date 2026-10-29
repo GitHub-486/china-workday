@@ -8,10 +8,10 @@ spring:
     url: jdbc:postgresql://${DB_HOST:127.0.0.1}:${DB_PORT:5432}/${DB_NAME:work}
     username: ${DB_USER:work}
     password: ${DB_PASSWORD:work}
-  flyway:
-    enabled: true
-    locations: classpath:db/migration/pg
-    table: china_workday_flyway_schema
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:sql/schema-postgres.sql
 
 # log4j2 配置请见 log4j2-spring.xml
 

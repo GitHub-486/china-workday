@@ -62,12 +62,7 @@
             <version>${jsoup.version}</version>
         </dependency>
 
-        <!-- Flyway: 数据库版本控制（runtime scope，不传递到引用方） -->
-        <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-core</artifactId>
-            <scope>runtime</scope>
-        </dependency>
+
 
         <!-- H2: 测试用 -->
         <dependency>
