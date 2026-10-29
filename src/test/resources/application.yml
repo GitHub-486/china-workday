@@ -12,5 +12,5 @@ china-workday:
   app:
     api-token: test-token
   crawl:
-    enabled: false
+    enabled: true
     on-startup: false

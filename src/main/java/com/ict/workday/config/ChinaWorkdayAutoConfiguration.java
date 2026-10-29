@@ -2,11 +2,9 @@ package com.ict.workday.config;
 
 import com.ict.workday.repository.*;
 import com.ict.workday.service.*;
-import com.ict.workday.repository.*;
-import com.ict.workday.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -17,7 +15,7 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 import javax.sql.DataSource;
 
-@AutoConfiguration
+@Configuration
 @ConditionalOnClass(HolidayRepository.class)
 @EnableConfigurationProperties({AppProperties.class, CrawlProperties.class})
 public class ChinaWorkdayAutoConfiguration {
