@@ -1,0 +1,14 @@
+# 本地开发环境：连接研发库
+# 启动方式：spring.profiles.active=dev（IDEA 运行配置默认即可）
+# 可用环境变量覆盖下列默认值，便于临时指向其他库
+server:
+  port: 8081
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:8.130.65.74}:${DB_PORT:1311}/${DB_NAME:rushi}
+    username: ${DB_USER:rushi}
+    password: ${DB_PASSWORD:Pk3.H4hVcmK}
+
+china-workday:
+  crawl:
+    # 本地开发抓取配置（如需抓取可在此开启 enabled/on-startup）

@@ -1,17 +1,12 @@
 package com.ict.workday.repository;
 
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Repository;
 
-/**
- * crawl_url 表的 JdbcTemplate 实现（SEC-06 参数化）。
- */
-@Repository
-public class CrawlUrlJdbcRepository implements CrawlUrlRepository {
+public class CrawlUrlH2Repository implements CrawlUrlRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public CrawlUrlJdbcRepository(JdbcTemplate jdbcTemplate) {
+    public CrawlUrlH2Repository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -20,7 +15,6 @@ public class CrawlUrlJdbcRepository implements CrawlUrlRepository {
         try {
             jdbcTemplate.update("INSERT INTO crawl_url (url, year) VALUES (?, ?)", url, year);
         } catch (Exception e) {
-            // 唯一约束冲突：已记录过，幂等忽略
         }
     }
 

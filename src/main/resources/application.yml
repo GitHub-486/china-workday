@@ -8,9 +8,9 @@ spring:
     url: jdbc:postgresql://${DB_HOST:127.0.0.1}:${DB_PORT:5432}/${DB_NAME:work}
     username: ${DB_USER:work}
     password: ${DB_PASSWORD:work}
-  sql:
-    init:
-      mode: always
+  flyway:
+    enabled: true
+    locations: classpath:db/migration/pg
 
 # log4j2 配置请见 log4j2-spring.xml
 

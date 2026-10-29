@@ -6,21 +6,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * 基于 JdbcTemplate 的实现。
- * 全部使用参数化查询（SEC-06），holiday_date 唯一约束保证幂等 upsert。
- */
-@Repository
-public class HolidayJdbcRepository implements HolidayRepository {
+public class HolidayH2Repository implements HolidayRepository {
 
-    private static final Logger log = LoggerFactory.getLogger(HolidayJdbcRepository.class);
+    private static final Logger log = LoggerFactory.getLogger(HolidayH2Repository.class);
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -39,7 +33,7 @@ public class HolidayJdbcRepository implements HolidayRepository {
         return r;
     };
 
-    public HolidayJdbcRepository(JdbcTemplate jdbcTemplate) {
+    public HolidayH2Repository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -49,20 +43,13 @@ public class HolidayJdbcRepository implements HolidayRepository {
                 "SELECT COUNT(*) FROM holiday WHERE holiday_date = ?", Integer.class, record.getHolidayDate());
         if (exists != null && exists > 0) {
             jdbcTemplate.update(
-                    """
-                    UPDATE holiday SET
-                        holiday_name = ?, day_type = ?, year = ?, source = ?, created_at = ?
-                    WHERE holiday_date = ?
-                    """,
+                    "UPDATE holiday SET holiday_name = ?, day_type = ?, year = ?, source = ?, created_at = ? WHERE holiday_date = ?",
                     record.getHolidayName(), record.getDayType().name(),
                     record.getYear(), record.getSource(), Timestamp.valueOf(record.getCreatedAt().withNano(0)),
                     record.getHolidayDate());
         } else {
             jdbcTemplate.update(
-                    """
-                    INSERT INTO holiday (holiday_date, holiday_name, day_type, year, source, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                    """,
+                    "INSERT INTO holiday (holiday_date, holiday_name, day_type, year, source, created_at) VALUES (?, ?, ?, ?, ?, ?)",
                     record.getHolidayDate(), record.getHolidayName(), record.getDayType().name(),
                     record.getYear(), record.getSource(), Timestamp.valueOf(record.getCreatedAt().withNano(0)));
         }

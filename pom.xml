@@ -13,7 +13,7 @@
 
     <groupId>io.github.github-486</groupId>
     <artifactId>china-workday</artifactId>
-    <version>1.0.2</version>
+    <version>1.1.2</version>
     <packaging>jar</packaging>
     <name>china-workday</name>
     <description>法定节假日/中国节假日/工作日判断公共服务</description>
@@ -62,6 +62,12 @@
             <version>${jsoup.version}</version>
         </dependency>
 
+        <!-- Flyway: 数据库版本控制 -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+
         <!-- H2: 测试用 -->
         <dependency>
             <groupId>com.h2database</groupId>
@@ -81,6 +87,40 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <classifier>exec</classifier>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>0.9.0</version> <!-- 使用较新版本 -->
+                <extensions>true</extensions>
+                <configuration>
+                    <publishingServerId>central</publishingServerId> <!-- 与 settings.xml 中的 id 对应 -->
+                    <autoPublish>true</autoPublish> <!-- 验证通过后自动发布到中央仓库 -->
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>3.2.8</version> <!-- 3.2.0 以上即可 -->
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase> <!-- 在 verify 阶段执行签名 -->
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <gpgArguments>
+                        <arg>--pinentry-mode</arg>
+                        <arg>loopback</arg>
+                    </gpgArguments>
+                </configuration>
             </plugin>
         </plugins>
     </build>

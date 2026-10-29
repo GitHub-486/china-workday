@@ -43,7 +43,7 @@ class HolidayControllerTest {
     @Test
     void isWorkday_holiday_shouldReturnFalse() throws Exception {
         seed(LocalDate.of(2026, 2, 15), "春节", DayType.HOLIDAY);
-        mockMvc.perform(get("/workday/api/holiday/is-workday").param("date", "2026-02-15"))
+        mockMvc.perform(get("/api/holiday/is-workday").param("date", "2026-02-15"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(200))
                 .andExpect(jsonPath("$.data.isWorkday").value(false))
@@ -54,7 +54,7 @@ class HolidayControllerTest {
     @Test
     void isWorkday_workdayOnWeekend_shouldReturnTrue() throws Exception {
         seed(LocalDate.of(2026, 2, 14), "春节调休", DayType.WORKDAY);
-        mockMvc.perform(get("/workday/api/holiday/is-workday").param("date", "2026-02-14"))
+        mockMvc.perform(get("/api/holiday/is-workday").param("date", "2026-02-14"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.isWorkday").value(true))
                 .andExpect(jsonPath("$.data.dayType").value("WORKDAY"));
@@ -62,49 +62,49 @@ class HolidayControllerTest {
 
     @Test
     void isWorkday_plainSunday_shouldReturnFalse() throws Exception {
-        mockMvc.perform(get("/workday/api/holiday/is-workday").param("date", "2026-02-22"))
+        mockMvc.perform(get("/api/holiday/is-workday").param("date", "2026-02-22"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.isWorkday").value(false));
     }
 
     @Test
     void isWorkday_invalidDateFormat_shouldReturn400() throws Exception {
-        mockMvc.perform(get("/workday/api/holiday/is-workday").param("date", "2026/02/14"))
+        mockMvc.perform(get("/api/holiday/is-workday").param("date", "2026/02/14"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(400));
     }
 
     @Test
     void isWorkday_missingDate_shouldReturn400() throws Exception {
-        mockMvc.perform(get("/workday/api/holiday/is-workday"))
+        mockMvc.perform(get("/api/holiday/is-workday"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(400));
     }
 
     @Test
     void month_invalidMonth13_shouldReturn400() throws Exception {
-        mockMvc.perform(get("/workday/api/holiday/month").param("year", "2026").param("month", "13"))
+        mockMvc.perform(get("/api/holiday/month").param("year", "2026").param("month", "13"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(400));
     }
 
     @Test
     void month_emptyParams_shouldReturn400() throws Exception {
-        mockMvc.perform(get("/workday/api/holiday/month"))
+        mockMvc.perform(get("/api/holiday/month"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(400));
     }
 
     @Test
     void export_withoutToken_shouldReturn401() throws Exception {
-        mockMvc.perform(get("/workday/api/holiday/export").param("year", "2026"))
+        mockMvc.perform(get("/api/holiday/export").param("year", "2026"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(401));
     }
 
     @Test
     void export_wrongToken_shouldReturn401() throws Exception {
-        mockMvc.perform(get("/workday/api/holiday/export").param("year", "2026")
+        mockMvc.perform(get("/api/holiday/export").param("year", "2026")
                         .header("X-API-Token", "wrong-token"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(401));
