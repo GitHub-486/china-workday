@@ -8,6 +8,41 @@
 
 > **抓取源说明**：gov.cn 政策文件库列表页（`/zhengce/zhengceku/`）对部分网络环境返回 403 且为 JS 动态渲染。本项目改用其**官方搜索 JSON 数据接口**（`sousuo.www.gov.cn/search-gov/data`，`type=gwyzcwjk` 政策文件库检索）获取各年份通知详情 URL，再抓取详情页解析。搜索接口返回失败时自动回退为列表页抓取。
 
+## 作为 Maven 依赖引入
+
+其他 Spring Boot 项目可通过 Maven 依赖引入 china-workday：
+
+```xml
+<dependency>
+    <groupId>io.github.github-486</groupId>
+    <artifactId>china-workday</artifactId>
+    <version>1.1.2</version>
+</dependency>
+```
+
+在 `@SpringBootApplication` 启动类上添加 `@EnableChinaWorkday` 启用：
+
+```java
+@SpringBootApplication
+@EnableChinaWorkday
+public class YourApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(YourApplication.class, args);
+    }
+}
+```
+
+启用后可通过 `@Autowired` 注入核心服务：
+
+```java
+@Autowired
+private WorkdayJudgeService workdayJudgeService;
+
+boolean workday = workdayJudgeService.isWorkday(LocalDate.of(2026, 10, 1));
+```
+
+> china-workday 使用独立的 Flyway 迁移历史表 `china_workday_flyway_schema`，与引用方的数据库迁移完全隔离，互不干扰。
+
 ## 快速开始（本地）
 
 要求：JDK 17、Maven 3.6+、PostgreSQL（或用 Docker 起库）。
