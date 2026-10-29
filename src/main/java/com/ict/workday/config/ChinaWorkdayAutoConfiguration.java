@@ -1,5 +1,6 @@
 package com.ict.workday.config;
 
+import com.ict.workday.client.GovCrawlClient;
 import com.ict.workday.repository.*;
 import com.ict.workday.service.*;
 import org.slf4j.Logger;
@@ -60,6 +61,13 @@ public class ChinaWorkdayAutoConfiguration {
     public JsonExportService jsonExportService(HolidayRepository repository) {
         log.info("china-workday 自动配置：JsonExportService");
         return new JsonExportService(repository);
+    }
+
+    @Bean
+    @ConditionalOnCrawlEnabled
+    public GovCrawlClient govCrawlClient(CrawlProperties crawlProperties) {
+        log.info("china-workday 自动配置：GovCrawlClient");
+        return new GovCrawlClient(crawlProperties.getTimeoutMillis());
     }
 
     @Bean
