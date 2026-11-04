@@ -3,14 +3,36 @@
 法定节假日 / 中国节假日 / 工作日判断公共服务（Spring Boot 3.2.5 / Java 17）。
 
 - **坐标**：`com:china-workday:1.0.0`，包名 `com.ict.workday`
-- **功能**：从国务院官方搜索数据接口（gov.cn「政策文件库」）获取「部分节假日安排的通知」，解析放假与调休日期入库（PostgreSQL），提供 HTTP 接口判断某日是否上班日，支持按年份导出 JSON 离线使用。
+- **功能**：从国务院官方搜索数据接口（gov.cn「政策文件库」）获取「部分节假日安排的通知」，解析放假与调休日期入库，提供 HTTP 接口判断某日是否上班日，支持按年份导出 JSON 离线使用。
+- **数据库**：支持 PostgreSQL 与 H2 内嵌数据库，通过 Spring profile 随时切换。
 - **代码仓库**：Gitee ｜ **发布仓库**：阿里云效 Packages（Maven）
 
 > **抓取源说明**：gov.cn 政策文件库列表页（`/zhengce/zhengceku/`）对部分网络环境返回 403 且为 JS 动态渲染。本项目改用其**官方搜索 JSON 数据接口**（`sousuo.www.gov.cn/search-gov/data`，`type=gwyzcwjk` 政策文件库检索）获取各年份通知详情 URL，再抓取详情页解析。搜索接口返回失败时自动回退为列表页抓取。
 
 ## 快速开始（本地）
 
-要求：JDK 17、Maven 3.6+、PostgreSQL（或用 Docker 起库）。
+要求：JDK 17、Maven 3.6+。
+
+### 方式一：H2 内嵌数据库（无需安装，推荐）
+
+```bash
+# 只需一行命令，无需 PostgreSQL
+mvn spring-boot:run -Dspring-boot.run.profiles=h2
+```
+
+首次启动会自动创建 `./data/china-workday.mv.db` 文件数据库并从 gov.cn 抓取节假日数据。
+
+H2 控制台访问：<http://localhost:8080/workday/h2-console>
+
+**数据库文件目录**可通过环境变量 `H2_DB_DIR` 指定（默认当前目录下的 `data/`）：
+
+| 运行方式 | 默认目录 | 示例 |
+|---|---|---|
+| `mvn spring-boot:run` | 项目根目录的 `data/` | `mvn spring-boot:run -Dspring-boot.run.profiles=h2` |
+| `java -jar app.jar` | 执行 jar 所在目录的 `data/` | `java -jar china-workday.jar --spring.profiles.active=h2` |
+| Docker | 容器内 `/app/data/`（需挂载 volume 持久化） | 见下方 Docker H2 说明 |
+
+### 方式二：PostgreSQL
 
 ```bash
 # 1. 建库（假设本机 PG 已启动）
@@ -26,11 +48,41 @@ export CHINA_WORKDAY_API_TOKEN=your-token
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-启动后：
-- 管理页：<http://localhost:8080/>（需 Token）
-- 判断接口：`GET /workday/api/holiday/is-workday?date=2026-02-14`
+启动后访问：<http://localhost:8080/workday/>
+
+## 管理页面
+
+内置管理页面位于 `src/main/resources/static/index.html`，主要分为三个功能区域：
+
+### 日历视图
+
+全年月度卡片展示，颜色区分日期类型：
+- **红色**：法定假日
+- **橙色**：调休上班
+- **灰色**：周末
+
+点击月份标题展开当月节假日明细表格，可查看具体日期、节日名称和类型。
+
+### 日期查询
+
+选择一个日期，快速判断当天是否为上班日。结果显示日期、星期、上班/休息状态和节日名称（如有）。
+
+### 接口调试台
+
+直接调用后台 API 并查看原始 JSON 响应，方便开发和测试。包含：
+
+| 功能 | 路径 | 说明 |
+|---|---|---|
+| 节假日试算 | `GET /api/holiday/is-workday?date=` | 判断是否上班日，响应含 `typeName` 中文描述 |
+| 月查询 | `GET /api/holiday/month?year=&month=` | 返回当月节假日明细（含 `typeName`） |
+| 年查询 | `GET /api/holiday/year?year=` | 返回全年全部记录（含 `typeName`） |
+| Token 设置 | — | 管理接口认证凭据，保存到浏览器 localStorage |
+| 手动抓取 | `POST /api/admin/crawl` | 触发 gov.cn 数据抓取 |
+| 导出 JSON | `GET /api/holiday/export?year=` | 导出指定年份为 JSON 文件 |
 
 ## Docker 部署
+
+### PostgreSQL（默认）
 
 ```bash
 cd deploy
@@ -40,25 +92,49 @@ docker compose up -d --build
 
 注意：`CHINA_WORKDAY_API_TOKEN` 未设置时容器将启动失败（快速失败，符合凭据安全原则）。
 
+### H2（单容器，无需 PostgreSQL）
+
+```bash
+docker run -d --name china-workday \
+  -p 8081:8080 \
+  -e SPRING_PROFILES_ACTIVE=h2 \
+  -e CHINA_WORKDAY_API_TOKEN=your-token \
+  -v ./h2-data:/app/data \
+  china-workday:1.0.2
+```
+
+`H2_DB_DIR` 默认 `./data`（容器内 `/app/data`），映射 volume 后可持久化。
+
 ## 对外接口
 
 统一返回 `{ code, message, data }`；写/管理/导出接口需在请求头携带 `X-API-Token`。
 
 | 方法 | 路径 | 说明 | 鉴权 |
-|---|---|---|---|---|
 | GET | `/workday/api/holiday/is-workday?date=2026-02-14` | 判断是否上班日 | 公开 |
 | GET | `/workday/api/holiday/month?year=2026&month=2` | 某月节假日明细 | 公开 |
 | GET | `/workday/api/holiday/year?year=2026` | 某年全部节假日/调休 | 公开 |
 | GET | `/workday/api/holiday/export?year=2026` | 导出 `{year}.json` | Token |
 | POST | `/workday/api/admin/crawl` | 手动触发抓取 | Token |
-| GET | `/` | 内置管理页 | 页面 |
+| GET | `/workday/` | 内置管理页面 | 页面 |
 
 `is-workday` 响应示例：
 
 ```json
 { "code": 200, "message": "ok",
-  "data": { "date": "2026-02-14", "isWorkday": true, "dayType": "WORKDAY", "holidayName": "春节调休" } }
+  "data": { "date": "2026-02-14", "isWorkday": true, "dayType": "WORKDAY",
+            "holidayName": "春节调休", "typeName": "调休上班" } }
 ```
+
+各字段说明：
+
+| 字段 | 含义 | 值 |
+|---|---|---|
+| `isWorkday` | 是否上班日 | `true` / `false` |
+| `dayType` | 数据库类型（有记录时） | `HOLIDAY` / `WORKDAY` / `null` |
+| `typeName` | 中文类型表述 | `放假` / `调休上班` / `工作日` / `休息日` |
+| `holidayName` | 节日名称（无记录时为 `null`） | 如 `春节` / `null` |
+
+`/year` 和 `/month` 接口返回记录中也包含 `typeName` 字段，`is-workday` 额外包含 `typeName`、`holidayName` 和 `isWorkday`。
 
 ## 上班日判断口径
 
@@ -68,30 +144,6 @@ docker compose up -d --build
 ## 离线数据（导出 JSON）
 
 引用方可持续关注节假日数据：调用 `/workday/api/holiday/export?year=2026` 获得 `2026.json`，放入自身 `resources` 中离线使用。
-
-## 发布到阿里云效 Packages（Maven）
-
-Maven 发布坐标已在 `pom.xml` 的 `<distributionManagement>` 预置（仓库 `id` 为 `aliyun-packages`），`url` 为占位符，需替换为你的云效仓库地址，并在 `~/.m2/settings.xml` 提供凭据：
-
-```xml
-<settings>
-  <servers>
-    <server>
-      <id>aliyun-packages</id>
-      <username>你的云效登录名</username>
-      <password>你的云效访问令牌</password>
-    </server>
-  </servers>
-</settings>
-```
-
-发布命令：
-
-```bash
-mvn clean deploy
-```
-
-> 仓库实际 `id/url` 与认证凭据属于用户侧配置，本文档不代填；请按阿里云效 Packages 控制台「仓库指南」填入 `pom.xml` 与 `settings.xml`。
 
 ## 配置项
 
@@ -109,6 +161,22 @@ mvn clean deploy
 | `china-workday.crawl` | `cron` | 定时监控 cron | `0 0 8 * * *` |
 | `china-workday.crawl` | `timeout-millis` | 抓取超时（ms） | `10000` |
 
+## 数据库切换
+
+默认使用 PostgreSQL（`application.yml`），切换到 H2 只需激活 `h2` profile：
+
+```bash
+mvn spring-boot:run -Dspring-boot.run.profiles=h2
+```
+
+H2 数据库文件目录通过环境变量 `H2_DB_DIR` 配置（默认 `./data`），适用于不同部署方式。
+
+profile 切换时，`spring.sql.init.schema-locations` 自动选择对应方言脚本：
+- 默认 → `db/schema.sql`（PostgreSQL，`BIGSERIAL` 自增）
+- `h2` → `db/schema-h2.sql`（H2 原生，`INT GENERATED BY DEFAULT AS IDENTITY`）
+
+测试默认使用 H2 内存模式（`src/test/resources/application.yml`），无需 PostgreSQL。
+
 ## 测试
 
 ```bash
@@ -125,15 +193,15 @@ mvn test
 
 ## 界面截图
 
-内置管理页面位于 `src/main/resources/static/index.html`，是一个单页接口调试台。
+*日历视图：年度月度卡片，颜色区分法定假日（红）、调休上班（橙）、周末（灰）*
 
-*公开接口面板：日期判断、月查询、年查询*
+![日历视图](docs/images/public.calendar.png)
 
-![公开接口面板](docs/images/public-panel.png)
+*日期查询：选择日期判断上班日*
 
-![公开接口面板](docs/images/public.year.png)
+![日期查询](docs/images/public-query.png)
 
-*管理接口面板：Token 设置、手动抓取、导出 JSON*
+*接口调试台：API 调用与响应查看*
 
-![管理接口面板](docs/images/admin-panel.png)
+![接口调试台](docs/images/admin-panel.png)
 

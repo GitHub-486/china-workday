@@ -3,76 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中国假期服务 · 接口调试台</title>
+    <title>中国假期服务</title>
+    <link rel="stylesheet" href="css/style.css">
     <style>
-        :root { --brand: #1f6feb; --danger: #cf222e; --ok: #1a7f37; --line: #d0d7de; --bg: #f6f8fa; --side: #1f2328; --side-hover: #33383f; }
-        * { box-sizing: border-box; }
-        html, body { height: 100%; }
-        body { margin: 0; font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; background: var(--bg); color: #1f2328; }
-        .layout { display: flex; min-height: 100vh; }
-        /* 左侧菜单 */
-        .sidebar { width: 220px; flex-shrink: 0; background: var(--side); color: #e6e6e6; padding: 16px 0; }
-        .sidebar .brand { padding: 4px 20px 16px; font-weight: 700; font-size: 16px; color: #fff; border-bottom: 1px solid #3d434b; margin-bottom: 10px; }
-        .menu-group { padding: 10px 0 4px; font-size: 12px; color: #9aa0a6; padding-left: 20px; letter-spacing: 1px; }
-        .menu-item { display: block; width: 100%; text-align: left; padding: 10px 20px; border: none; background: none; color: #e6e6e6; font-size: 14px; cursor: pointer; }
-        .menu-item:hover { background: var(--side-hover); }
-        .menu-item.active { background: var(--brand); color: #fff; }
-        .menu-item .method { font-size: 11px; padding: 1px 6px; border-radius: 4px; margin-right: 8px; color: #fff; background: #6e7781; vertical-align: middle; }
-        .menu-item .method.get { background: #1a7f37; }
-        .menu-item .method.post { background: #bf8700; }
-        .menu-item .lock { color: #d29922; float: right; font-size: 12px; }
-        /* 右侧内容 */
-        .main { flex: 1; padding: 24px 28px; }
-        .main h1 { font-size: 20px; margin: 0 0 4px; }
-        .subtitle { color: #57606a; font-size: 13px; margin-bottom: 20px; }
-        .card { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 18px; margin-bottom: 16px; }
-        .card .api-line { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
-        .card .method-badge { font-size: 11px; padding: 3px 8px; border-radius: 4px; color: #fff; font-weight: 700; }
-        .card .method-badge.get { background: #1a7f37; }
-        .card .method-badge.post { background: #bf8700; }
-        .card h3 { font-size: 15px; margin: 0; }
-        .card .path { font-family: Consolas, monospace; font-size: 13px; color: #57606a; }
-        .card .desc { font-size: 13px; color: #57606a; margin: 6px 0 12px; }
-        .params { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
-        .params label { font-weight: 600; font-size: 13px; }
-        input, select, button { padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px; font-size: 14px; }
-        input:focus { outline: 2px solid var(--brand); }
-        button.call { cursor: pointer; border: none; background: var(--brand); color: #fff; }
-        button.call:active { background: #1158c7; }
-        button.secondary { background: #eff1f3; color: #1f2328; border: 1px solid var(--line); cursor: pointer; }
-        .result { display: none; background: #f6f8fa; border: 1px solid var(--line); border-radius: 6px; padding: 12px; font-family: Consolas, monospace; font-size: 13px; margin-top: 8px; white-space: pre-wrap; word-break: break-all; max-height: 320px; overflow: auto; }
-        .result.show { display: block; }
-        .result .meta { color: var(--ok); margin-bottom: 6px; }
-        .result .meta.err { color: var(--danger); }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th, td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; }
-        th { background: var(--bg); }
-        .badge { padding: 2px 8px; border-radius: 999px; font-size: 12px; color: #fff; }
-        .badge.holiday { background: var(--danger); }
-        .badge.workday { background: var(--ok); }
-        .badge.rest { background: #6e7781; }
+        .navbar-tab.api {
+            margin-left: auto;
+        }
     </style>
 </head>
 <body>
-<div class="layout">
-    <nav class="sidebar">
-        <div class="brand">中国假期服务</div>
-        <div class="menu-group">公开接口</div>
-        <button class="menu-item" data-panel="pub" id="m-thru">
-            <span class="method get">GET</span> 上班日查询
-        </button>
-        <div class="menu-group">管理接口</div>
-        <button class="menu-item" data-panel="adm" id="m-adm">
-            <span class="method post">POST</span> 抓取/导出 <span class="lock">🔒</span>
-        </button>
+
+    <nav class="navbar">
+        <div class="navbar-brand">中国<span>假期</span>服务</div>
+        <div class="navbar-tabs">
+            <button class="navbar-tab active" data-target="section-calendar">日历</button>
+            <button class="navbar-tab" data-target="section-query">查询</button>
+            <button class="navbar-tab api" data-target="section-api">调试台</button>
+        </div>
+        <div class="navbar-actions">
+            <button class="theme-toggle" id="theme-toggle" title="切换暗色模式">🌙</button>
+        </div>
     </nav>
 
-    <main class="main">
-        <h1>接口调试台</h1>
-        <div class="subtitle">按左侧菜单选择接口，填写参数后点击调用。</div>
+    <div class="container">
 
-        <!-- ===== 公开接口面板 ===== -->
-        <div id="panel-pub" class="panel">
+        <!-- Skeleton Hero -->
+        <div class="skeleton skeleton-hero" id="skeleton-hero"></div>
+
+        <!-- Hero -->
+        <div class="hero" id="hero-section" style="display:none">
+            <div class="hero-left">
+                <div class="hero-date">TODAY</div>
+                <div class="hero-date-large" id="hero-date-large">--</div>
+                <div class="hero-badge workday" id="hero-badge">--</div>
+            </div>
+            <div class="hero-right">
+                <div class="hero-countdown-label">距下个节假日</div>
+                <div class="hero-countdown" id="hero-countdown"><span>--</span></div>
+                <div class="hero-countdown-sub" id="hero-countdown-sub">--</div>
+            </div>
+        </div>
+
+        <!-- Section: Calendar -->
+        <div class="section active" id="section-calendar">
+            <div class="section-header">
+                <div class="section-title">年度日历</div>
+                <div class="year-switcher">
+                    <button class="year-btn" id="year-prev">&lsaquo;</button>
+                    <div class="year-dropdown-wrapper">
+                        <button class="year-display-btn" id="year-display-btn"></button>
+                        <div class="year-picker" id="year-picker">
+                            <div class="year-picker-header">
+                                <button class="year-picker-nav" id="picker-prev">&lsaquo;</button>
+                                <span class="year-picker-range" id="picker-range"></span>
+                                <button class="year-picker-nav" id="picker-next">&rsaquo;</button>
+                            </div>
+                            <div class="year-picker-grid" id="picker-grid"></div>
+            <button class="year-picker-today" id="picker-today">回到今年</button>
+                        </div>
+                    </div>
+                    <button class="year-btn" id="year-next">&rsaquo;</button>
+                </div>
+                <div class="section-subtitle">点击月份标题查看详细假日安排</div>
+            </div>
+            <!-- Skeleton Calendar -->
+            <div class="skeleton-calendar" id="skeleton-calendar">
+                <div class="skeleton skeleton-card"></div>
+                <div class="skeleton skeleton-card"></div>
+                <div class="skeleton skeleton-card"></div>
+                <div class="skeleton skeleton-card"></div>
+                <div class="skeleton skeleton-card"></div>
+                <div class="skeleton skeleton-card"></div>
+                <div class="skeleton skeleton-card"></div>
+                <div class="skeleton skeleton-card"></div>
+                <div class="skeleton skeleton-card"></div>
+                <div class="skeleton skeleton-card"></div>
+                <div class="skeleton skeleton-card"></div>
+                <div class="skeleton skeleton-card"></div>
+            </div>
+            <div class="calendar-grid" id="calendar-grid" style="display:none"></div>
+            <div class="legend">
+                <div class="legend-item"><span class="legend-dot holiday"></span>法定假日</div>
+                <div class="legend-item"><span class="legend-dot workday"></span>调休上班</div>
+                <div class="legend-item"><span class="legend-dot weekend"></span>周末</div>
+                <div class="legend-item"><span class="legend-dot today"></span>今天</div>
+            </div>
+        </div>
+
+        <!-- Section: Query -->
+        <div class="section" id="section-query">
+            <div class="section-header">
+                <div class="section-title">日期查询</div>
+                <div class="section-subtitle">查询任意日期是否为上班日</div>
+            </div>
+            <div class="query-panel">
+                <form class="query-form" id="query-form">
+                    <input type="date" id="query-date">
+                    <button type="submit">判断</button>
+                </form>
+                <div class="query-result" id="query-result"></div>
+            </div>
+        </div>
+
+        <!-- Section: API Debug Console -->
+        <div class="section api-section" id="section-api">
+            <div class="section-header">
+                <div class="section-title">接口调试台</div>
+                <div class="section-subtitle">直接调用后端 API，查看原始响应</div>
+            </div>
+
             <div class="card">
                 <div class="api-line">
                     <span class="method-badge get">GET</span>
@@ -80,12 +119,12 @@
                 </div>
                 <div class="path">/workday/api/holiday/is-workday</div>
                 <div class="desc">选择一个日期，快速判断是否上班日。</div>
-                <div class="params">
+                <div class="api-params">
                     <label>日期</label>
                     <input type="date" id="p-date">
                     <button class="call" id="b-date">判断</button>
                 </div>
-                <div class="result" id="r-date"></div>
+                <div class="api-result" id="r-date"></div>
             </div>
 
             <div class="card">
@@ -95,8 +134,8 @@
                 </div>
                 <div class="path">/workday/api/holiday/month?year=&amp;month=</div>
                 <div class="desc">返回指定年、月的节假日与调休安排。</div>
-                <div class="params">
-                    <label>年</label><input type="number" id="q-year" list="yearList" style="width:90px">
+                <div class="api-params">
+                    <label>年</label><button class="year-inline-btn" id="q-year" data-value=""></button>
                     <label>月</label>
                     <select id="q-month">
                         <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option>
@@ -106,7 +145,7 @@
                     </select>
                     <button class="call" id="b-month">调用</button>
                 </div>
-                <div class="result" id="r-month"></div>
+                <div class="api-result" id="r-month"></div>
             </div>
 
             <div class="card">
@@ -116,81 +155,488 @@
                 </div>
                 <div class="path">/workday/api/holiday/year?year=</div>
                 <div class="desc">返回指定年份所有节假日与调休记录。</div>
-                <div class="params">
-                    <label>年</label><input type="number" id="y-year" list="yearList" style="width:90px">
+                <div class="api-params">
+                    <label>年</label><button class="year-inline-btn" id="y-year" data-value=""></button>
                     <button class="call" id="b-year">调用</button>
                 </div>
-                <div class="result" id="r-year"></div>
+                <div class="api-result" id="r-year"></div>
             </div>
-        </div>
 
-        <!-- ===== 管理接口面板 ===== -->
-        <div id="panel-adm" class="panel" style="display:none">
             <div class="card">
                 <div class="api-line">
                     <span class="method-badge post">KEY</span>
                     <h3>X-API-Token 设置</h3>
                 </div>
                 <div class="desc">管理接口需在请求头携带 X-API-Token。在此设置后保存到浏览器本地，调用时自动附带。</div>
-                <div class="params">
+                <div class="api-params">
                     <input type="password" id="adm-token" placeholder="X-API-Token" style="width:300px">
                     <button class="call secondary" id="b-token">保存</button>
                 </div>
-                <div class="result" id="r-token"></div>
+                <div class="api-result" id="r-token"></div>
             </div>
 
             <div class="card">
                 <div class="api-line">
                     <span class="method-badge post">POST</span>
-                    <h3>手动触发抓取 🔒</h3>
+                    <h3>手动触发抓取</h3>
                 </div>
                 <div class="path">/workday/api/admin/crawl</div>
-                <div class="desc">从 gov.cn 官方搜索接口拉取近期年份节假日通知并入库。</div>
-                <div class="params">
+                <div class="desc">从 gov.cn 官方搜索接口拉取近期年份节假日通知并入库。需 Token 认证。</div>
+                <div class="api-params">
                     <button class="call" id="b-crawl">调用</button>
                 </div>
-                <div class="result" id="r-crawl"></div>
+                <div class="api-result" id="r-crawl"></div>
             </div>
 
             <div class="card">
                 <div class="api-line">
                     <span class="method-badge get">GET</span>
-                    <h3>导出当年 JSON 🔒</h3>
+                    <h3>导出当年 JSON</h3>
                 </div>
                 <div class="path">/workday/api/holiday/export?year=</div>
-                <div class="desc">将某年节假日数据导出为 {year}.json，供离线引用。</div>
-                <div class="params">
-                    <label>年</label><input type="number" id="e-year" list="yearList" style="width:90px">
+                <div class="desc">将某年节假日数据导出为 {year}.json，供离线引用。需 Token 认证。</div>
+                <div class="api-params">
+                    <label>年</label><button class="year-inline-btn" id="e-year" data-value=""></button>
                     <button class="call secondary" id="b-export">导出文件</button>
                 </div>
-                <div class="result" id="r-export"></div>
+                <div class="api-result" id="r-export"></div>
             </div>
+
         </div>
 
-        <datalist id="yearList">
-            <option value="2027"></option>
-            <option value="2026"></option>
-            <option value="2025"></option>
-            <option value="2024"></option>
-            <option value="2023"></option>
-            <option value="2022"></option>
-            <option value="2021"></option>
-            <option value="2020"></option>
-        </datalist>
-    </main>
-</div>
+        <div class="footer">
+            数据来源 <a href="https://www.gov.cn" target="_blank" rel="noopener">中国政府网</a>
+        </div>
+
+    </div>
 
 <script>
-    // 年份输入框默认取当前年
+const API_BASE = '/workday/api/holiday';
+const MONTH_NAMES = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
+const WEEKDAY_LABELS = ['日', '一', '二', '三', '四', '五', '六'];
+
+let currentYear;
+let holidayData = {};
+let expandedMonth = null;
+let pickerTarget = null;
+
+// ---- Dark Mode ----
+function initTheme() {
+    const stored = localStorage.getItem('cw_theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const dark = stored !== null ? stored === 'dark' : prefersDark;
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    document.getElementById('theme-toggle').textContent = dark ? '☀️' : '🌙';
+}
+
+function toggleTheme() {
+    const el = document.documentElement;
+    const dark = el.getAttribute('data-theme') === 'dark';
+    const next = dark ? 'light' : 'dark';
+    el.setAttribute('data-theme', next);
+    localStorage.setItem('cw_theme', next);
+    document.getElementById('theme-toggle').textContent = next === 'dark' ? '☀️' : '🌙';
+}
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    const stored = localStorage.getItem('cw_theme');
+    if (stored !== null) return;
+    document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+    document.getElementById('theme-toggle').textContent = e.matches ? '☀️' : '🌙';
+});
+
+function getToday() {
+    const d = new Date();
+    return { year: d.getFullYear(), month: d.getMonth() + 1, day: d.getDate(), date: d };
+}
+
+function formatDateStr(year, month, day) {
+    return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+// ---- API ----
+async function fetchYearData(year) {
+    const res = await fetch(`${API_BASE}/year?year=${year}`);
+    const body = await res.json();
+    if (body.code !== 200) throw new Error(body.message);
+    return body.data;
+}
+
+async function fetchIsWorkday(dateStr) {
+    const res = await fetch(`${API_BASE}/is-workday?date=${dateStr}`);
+    const body = await res.json();
+    if (body.code !== 200) throw new Error(body.message);
+    return body.data;
+}
+
+async function fetchMonthData(year, month) {
+    const res = await fetch(`${API_BASE}/month?year=${year}&month=${month}`);
+    const body = await res.json();
+    if (body.code !== 200) throw new Error(body.message);
+    return body.data;
+}
+
+// ---- Data Indexing ----
+function indexHolidayData(records) {
+    const map = {};
+    for (const r of records) {
+        map[r.holidayDate] = r;
+    }
+    return map;
+}
+
+function getHolidayInfo(year, month, day) {
+    const dateStr = formatDateStr(year, month, day);
+    return holidayData[dateStr] || null;
+}
+
+function isWeekend(year, month, day) {
+    const d = new Date(year, month - 1, day);
+    return d.getDay() === 0 || d.getDay() === 6;
+}
+
+function getDayType(year, month, day) {
+    const info = getHolidayInfo(year, month, day);
+    if (info) {
+        if (info.dayType === 'HOLIDAY') return 'holiday';
+        if (info.dayType === 'WORKDAY') return 'workday';
+    }
+    if (isWeekend(year, month, day)) return 'weekend';
+    return 'normal';
+}
+
+function getDayLabel(year, month, day) {
+    const info = getHolidayInfo(year, month, day);
+    if (info) {
+        if (info.dayType === 'HOLIDAY') return info.holidayName.length > 2 ? info.holidayName.slice(0, 2) : info.holidayName;
+        if (info.dayType === 'WORKDAY') return '班';
+    }
+    return '';
+}
+
+// ---- Countdown ----
+function findNextHoliday(records) {
+    const today = getToday();
+    const todayStr = formatDateStr(today.year, today.month, today.day);
+    const sorted = records.filter(r => r.dayType === 'HOLIDAY' && r.holidayDate > todayStr)
+        .sort((a, b) => a.holidayDate.localeCompare(b.holidayDate));
+    if (sorted.length === 0) return null;
+    return sorted[0];
+}
+
+function calcDaysBetween(d1, d2) {
+    const date1 = new Date(d1);
+    const date2 = new Date(d2);
+    return Math.floor((date2 - date1) / (1000 * 60 * 60 * 24));
+}
+
+// ---- Render Hero ----
+function renderHero() {
+    const today = getToday();
+    const dateStr = formatDateStr(today.year, today.month, today.day);
+    const weekday = WEEKDAY_LABELS[today.date.getDay()];
+
+    document.getElementById('hero-date-large').textContent = `${today.year}年${today.month}月${today.day}日 星期${weekday}`;
+
+    fetchIsWorkday(dateStr).then(data => {
+        const badge = document.getElementById('hero-badge');
+        if (data.dayType === 'HOLIDAY') {
+            badge.textContent = data.holidayName + '放假';
+            badge.className = 'hero-badge holiday';
+        } else {
+            badge.textContent = data.typeName;
+            badge.className = 'hero-badge ' + (data.isWorkday ? 'workday' : 'rest');
+        }
+    });
+
+    fetchYearData(today.year).then(records => {
+        const next = findNextHoliday(records);
+        if (next) {
+            const days = calcDaysBetween(dateStr, next.holidayDate);
+            const el = document.getElementById('hero-countdown');
+            el.innerHTML = `${days} <span>天</span>`;
+            document.getElementById('hero-countdown-sub').textContent = '距 ' + next.holidayName;
+        } else {
+            document.getElementById('hero-countdown').innerHTML = '-- <span>天</span>';
+        }
+    });
+}
+
+// ---- Render Calendar ----
+function renderCalendar(year) {
+    const grid = document.getElementById('calendar-grid');
+    grid.innerHTML = '';
+
+    for (let m = 0; m < 12; m++) {
+        const month = m + 1;
+        const card = document.createElement('div');
+        card.className = 'month-card';
+        card.dataset.month = month;
+
+        const firstDay = new Date(year, m, 1).getDay();
+        const daysInMonth = new Date(year, m + 1, 0).getDate();
+        const today = getToday();
+        const isCurrentMonth = year === today.year && month === today.month;
+
+        let holidayCount = 0, workdayCount = 0;
+        for (let d = 1; d <= daysInMonth; d++) {
+            const t = getDayType(year, month, d);
+            if (t === 'holiday') holidayCount++;
+            if (t === 'workday') workdayCount++;
+        }
+
+        card.innerHTML = `
+            <div class="month-header">
+                <div class="month-title">${month}<span class="month-name">${MONTH_NAMES[m]}</span></div>
+                <div class="month-stats">${holidayCount > 0 ? '<span style="color:var(--text-day-holiday)">假' + holidayCount + '</span>' : ''}${workdayCount > 0 ? '<span style="color:var(--text-day-workday)"> 调' + workdayCount + '</span>' : ''}</div>
+            </div>
+            <div class="weekday-row">
+                ${WEEKDAY_LABELS.map(w => '<div class="weekday-label">' + w + '</div>').join('')}
+            </div>
+            <div class="days-grid">
+                ${'<div class="day-cell other-month"></div>'.repeat(firstDay)}
+                ${Array.from({ length: daysInMonth }, (_, i) => {
+                    const d = i + 1;
+                    const type = getDayType(year, month, d);
+                    const label = getDayLabel(year, month, d);
+                    const isToday = isCurrentMonth && d === today.day;
+                    const cls = ['day-cell', type !== 'normal' ? type : '', isToday ? 'today' : ''].filter(Boolean).join(' ');
+                    return '<div class="' + cls + '"><span class="day-num">' + d + '</span>' + (label ? '<span class="day-label">' + label + '</span>' : '') + '</div>';
+                }).join('')}
+            </div>
+        `;
+
+        card.querySelector('.month-header').addEventListener('click', () => {
+            toggleMonthDetail(month);
+        });
+
+        grid.appendChild(card);
+    }
+}
+
+// ---- Month Detail ----
+async function toggleMonthDetail(month) {
+    const existing = document.getElementById('month-detail');
+    if (existing) existing.remove();
+    expandedMonth = null;
+
+    const data = await fetchMonthData(currentYear, month);
+    if (!data || data.length === 0) return;
+
+    const div = document.createElement('div');
+    div.id = 'month-detail';
+    div.className = 'month-detail show';
+
+    let tableRows = '';
+    for (const r of data) {
+        const d = r.holidayDate;
+        const dateObj = new Date(d);
+        const weekday = WEEKDAY_LABELS[dateObj.getDay()];
+        const isHoliday = r.dayType === 'HOLIDAY';
+        tableRows += '<tr><td>' + d + ' 星期' + weekday + '</td><td>' + r.holidayName + '</td><td><span class="tag ' + (isHoliday ? 'tag-holiday' : 'tag-workday') + '">' + (isHoliday ? '放假' : '调休上班') + '</span></td></tr>';
+    }
+
+    div.innerHTML = '<div class="month-detail-header"><div class="month-detail-title">' + month + '月' + MONTH_NAMES[month - 1] + ' 节假日明细</div><button class="month-detail-close">&times;</button></div><table class="month-detail-table"><thead><tr><th>日期</th><th>节日</th><th>类型</th></tr></thead><tbody>' + tableRows + '</tbody></table>';
+
+    div.querySelector('.month-detail-close').addEventListener('click', () => {
+        div.classList.remove('show');
+        setTimeout(() => div.remove(), 200);
+        expandedMonth = null;
+    });
+
+    const grid = document.getElementById('calendar-grid');
+    grid.parentNode.insertBefore(div, grid.nextSibling);
+    expandedMonth = month;
+}
+
+// ---- Query ----
+function setupQuery() {
+    const form = document.getElementById('query-form');
+    const dateInput = document.getElementById('query-date');
+    const result = document.getElementById('query-result');
+
+    dateInput.value = formatDateStr(getToday().year, getToday().month, getToday().day);
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const dateStr = dateInput.value;
+        if (!dateStr) return;
+
+        try {
+            const data = await fetchIsWorkday(dateStr);
+            const dateObj = new Date(dateStr);
+            const weekday = WEEKDAY_LABELS[dateObj.getDay()];
+            let typeClass;
+            if (data.dayType === 'HOLIDAY') {
+                typeClass = 'tag-holiday';
+            } else if (data.isWorkday) {
+                typeClass = 'tag-workday';
+            } else {
+                typeClass = 'tag-rest';
+            }
+
+            result.innerHTML = '<div class="query-result-item"><span class="label">日期</span><span class="value">' + dateStr + ' 星期' + weekday + '</span></div><div class="query-result-item"><span class="label">类型</span><span class="value"><span class="tag ' + typeClass + '">' + (data.dayType === 'HOLIDAY' ? (data.holidayName || '法定假日') + '放假' : data.typeName) + '</span></span></div>' + (data.holidayName ? '<div class="query-result-item"><span class="label">节日</span><span class="value">' + data.holidayName + '</span></div>' : '');
+            result.classList.add('show');
+        } catch (err) {
+            result.innerHTML = '<div style="color:var(--text-day-holiday);font-size:14px">查询失败：' + err.message + '</div>';
+            result.classList.add('show');
+        }
+    });
+}
+
+// ---- Tab Switching ----
+function setupTabs() {
+    document.querySelectorAll('.navbar-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.navbar-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(tab.dataset.target).classList.add('active');
+        });
+    });
+}
+
+// ---- Year Picker ----
+let pickerStartYear;
+
+function renderPicker(startYear) {
+    const grid = document.getElementById('picker-grid');
+    const rangeLabel = document.getElementById('picker-range');
+    pickerStartYear = startYear;
+    rangeLabel.textContent = startYear + '年 - ' + (startYear + 5) + '年';
+    grid.innerHTML = '';
+    for (let i = 0; i < 6; i++) {
+        const y = startYear + i;
+        const btn = document.createElement('button');
+        const ref = pickerTarget ? parseInt(pickerTarget.dataset.value, 10) : currentYear;
+        btn.className = 'year-picker-option' + (y === ref ? ' active' : '');
+        btn.textContent = y + '年';
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (pickerTarget) {
+                pickerTarget.textContent = y;
+                pickerTarget.dataset.value = y;
+                pickerTarget = null;
+            } else {
+                switchYear(y);
+            }
+            closePicker();
+        });
+        grid.appendChild(btn);
+    }
+}
+
+function openPicker() {
+    const start = currentYear - 2;
+    renderPicker(start);
+    document.getElementById('year-picker').classList.add('open');
+}
+
+function closePicker() {
+    const p = document.getElementById('year-picker');
+    p.classList.remove('open');
+    pickerTarget = null;
+}
+
+// ---- Year Switcher ----
+function setupYearSwitcher() {
+    const displayBtn = document.getElementById('year-display-btn');
+    const picker = document.getElementById('year-picker');
+
+    displayBtn.addEventListener('click', () => {
+        if (picker.classList.contains('open')) {
+            closePicker();
+        } else {
+            picker.style.position = '';
+            picker.style.left = '';
+            picker.style.top = '';
+            picker.style.transform = '';
+            document.querySelector('.year-dropdown-wrapper').appendChild(picker);
+            openPicker();
+        }
+    });
+
+    document.getElementById('picker-prev').addEventListener('click', (e) => {
+        e.stopPropagation();
+        renderPicker(pickerStartYear - 6);
+    });
+    document.getElementById('picker-next').addEventListener('click', (e) => {
+        e.stopPropagation();
+        renderPicker(pickerStartYear + 6);
+    });
+
+    document.getElementById('picker-today').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const thisYear = new Date().getFullYear();
+        if (pickerTarget) {
+            pickerTarget.textContent = thisYear;
+            pickerTarget.dataset.value = thisYear;
+            pickerTarget = null;
+        } else if (thisYear !== currentYear) {
+            switchYear(thisYear);
+        }
+        closePicker();
+    });
+
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('.year-inline-btn')) return;
+        if (!picker.contains(e.target) && e.target !== displayBtn) {
+            closePicker();
+        }
+    });
+
+    document.getElementById('year-prev').addEventListener('click', () => {
+        switchYear(currentYear - 1);
+    });
+    document.getElementById('year-next').addEventListener('click', () => {
+        switchYear(currentYear + 1);
+    });
+}
+
+async function switchYear(year) {
+    currentYear = year;
+    document.getElementById('year-display-btn').textContent = year;
+
+    document.getElementById('calendar-grid').style.display = 'none';
+    document.getElementById('skeleton-calendar').style.display = '';
+
+    const records = await fetchYearData(year);
+    holidayData = indexHolidayData(records);
+
+    document.getElementById('skeleton-calendar').style.display = 'none';
+    document.getElementById('calendar-grid').style.display = '';
+    renderCalendar(year);
+}
+
+// ===== API Console =====
+function setupApiConsole() {
     const curYear = new Date().getFullYear();
-    document.getElementById('q-year').value = curYear;
-    document.getElementById('y-year').value = curYear;
-    document.getElementById('e-year').value = curYear;
+    function setupInlineYearBtn(id) {
+        const btn = document.getElementById(id);
+        btn.textContent = curYear;
+        btn.dataset.value = curYear;
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            pickerTarget = btn;
+            const p = document.getElementById('year-picker');
+            if (p.classList.contains('open')) { p.classList.remove('open'); return; }
+            const rect = btn.getBoundingClientRect();
+            p.style.position = 'fixed';
+            p.style.left = Math.max(8, rect.left + rect.width / 2 - 110) + 'px';
+            p.style.top = (rect.bottom + 6) + 'px';
+            p.style.transform = 'none';
+            document.body.appendChild(p);
+            const start = parseInt(btn.dataset.value, 10) - 2;
+            renderPicker(start);
+            p.classList.add('open');
+        });
+    }
+    setupInlineYearBtn('q-year');
+    setupInlineYearBtn('y-year');
+    setupInlineYearBtn('e-year');
 
     const API_TOK = 'cw_token';
     const admTokenInput = document.getElementById('adm-token');
-
-    // Token 统一从 localStorage 读取；注入到管理接口的 X-API-Token
     function token() { return localStorage.getItem(API_TOK) || ''; }
     admTokenInput.value = token();
 
@@ -201,7 +647,8 @@
         el.innerHTML = '<div class="meta">Token 已保存</div>';
     };
 
-    async function api(url, opts = {}) {
+    async function api(url, opts) {
+        opts = opts || {};
         const headers = { ...(opts.headers || {}) };
         if (opts.auth !== false) headers['X-API-Token'] = token();
         const res = await fetch(url, { ...opts, headers });
@@ -216,48 +663,15 @@
             const contentType = res.headers.get('content-type') || '';
             if (contentType.includes('application/json')) {
                 const data = await res.json();
-                text = `HTTP ${res.status}  OK\n` + JSON.stringify(data, null, 2);
+                text = 'HTTP ' + res.status + '  OK\n' + JSON.stringify(data, null, 2);
             } else {
-                text = `HTTP ${res.status}\n` + await res.text();
+                text = 'HTTP ' + res.status + '\n' + await res.text();
             }
         } catch (e) {
-            text = `HTTP ${res.status}\n（响应解析失败：${e.message})`;
+            text = 'HTTP ' + res.status + '（响应解析失败：' + e.message + ')';
         }
         el.textContent = text;
     }
-
-    // ===== 左侧菜单切换 =====
-    const items = document.querySelectorAll('.menu-item');
-    function activate(id) {
-        items.forEach(m => m.classList.remove('active'));
-        const btn = document.getElementById(id);
-        btn.classList.add('active');
-        const panel = 'panel-' + btn.dataset.panel;
-        document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
-        document.getElementById(panel).style.display = 'block';
-    }
-    document.getElementById('m-thru').onclick = () => activate('m-thru');
-    document.getElementById('m-adm').onclick = () => activate('m-adm');
-    activate('m-thru');
-
-    // ===== 公共查询接口 =====
-    document.getElementById('b-date').onclick = async () => {
-        const d = document.getElementById('p-date').value;
-        const el = document.getElementById('r-date');
-        if (!d) { el.classList.add('show'); el.innerHTML = '请选择日期'; return; }
-        const res = await api('/workday/api/holiday/is-workday?date=' + d, { auth: false });
-        const body = await res.json();
-        el.classList.add('show');
-        if (body.code !== 200) {
-            el.innerHTML = `<div class="meta err">${body.message || '请求失败'}</div>`;
-            return;
-        }
-        const dd = body.data;
-        el.innerHTML = `<table><thead><tr><th>日期</th><th>是否上班</th><th>类型</th><th>节日名称</th></tr></thead>`
-            + `<tbody><tr><td>${dd.date}</td><td>${dd.isWorkday ? '✅ 上班日' : '❌ 休息日'}</td>`
-            + `<td><span class="badge ${dd.dayType === 'HOLIDAY' ? 'holiday' : dd.dayType === 'WORKDAY' ? 'workday' : 'rest'}">${dd.dayType === 'HOLIDAY' ? '放假' : dd.dayType === 'WORKDAY' ? '调休上班' : '正常休息'}</span></td>`
-            + `<td>${dd.holidayName || '—'}</td></tr></tbody></table>`;
-    };
 
     function renderTable(el, records) {
         if (!records || records.length === 0) {
@@ -266,35 +680,52 @@
             return;
         }
         el.classList.add('show');
-        el.innerHTML = `<div class="meta">共 ${records.length} 条记录</div>`
-            + `<table><thead><tr><th>日期</th><th>名称</th><th>类型</th></tr></thead><tbody>`
-            + records.map(r => `<tr><td>${r.holidayDate || r.date}</td><td>${r.holidayName || r.name || '—'}</td>`
-                + `<td><span class="badge ${r.dayType === 'HOLIDAY' ? 'holiday' : 'workday'}">${r.dayType === 'HOLIDAY' ? '放假' : '调休上班'}</span></td></tr>`).join('')
-            + `</tbody></table>`;
+        el.innerHTML = '<div class="meta">共 ' + records.length + ' 条记录</div>'
+            + '<table><thead><tr><th>日期</th><th>名称</th><th>类型</th></tr></thead><tbody>'
+            + records.map(r => '<tr><td>' + (r.holidayDate || r.date) + '</td><td>' + (r.holidayName || r.name || '—') + '</td>'
+                + '<td><span class="badge ' + (r.dayType === 'HOLIDAY' ? 'holiday' : 'workday') + '">' + (r.typeName || (r.dayType === 'HOLIDAY' ? '放假' : '调休上班')) + '</span></td></tr>').join('')
+            + '</tbody></table>';
     }
 
+    document.getElementById('b-date').onclick = async () => {
+        const d = document.getElementById('p-date').value;
+        const el = document.getElementById('r-date');
+        if (!d) { el.classList.add('show'); el.innerHTML = '请选择日期'; return; }
+        const res = await api('/workday/api/holiday/is-workday?date=' + d, { auth: false });
+        const body = await res.json();
+        el.classList.add('show');
+        if (body.code !== 200) {
+            el.innerHTML = '<div class="meta err">' + (body.message || '请求失败') + '</div>';
+            return;
+        }
+        const dd = body.data;
+        el.innerHTML = '<table><thead><tr><th>日期</th><th>是否上班</th><th>类型</th><th>节日名称</th></tr></thead>'
+            + '<tbody><tr><td>' + dd.date + '</td><td>' + (dd.isWorkday ? '上班日' : '休息日') + '</td>'
+            + '<td><span class="badge ' + (dd.dayType === 'HOLIDAY' ? 'holiday' : dd.dayType === 'WORKDAY' ? 'workday' : 'rest') + '">' + dd.typeName + '</span></td>'
+            + '<td>' + (dd.holidayName || '—') + '</td></tr></tbody></table>';
+    };
+
     document.getElementById('b-month').onclick = async () => {
-        const y = document.getElementById('q-year').value;
+        const y = document.getElementById('q-year').dataset.value;
         const m = document.getElementById('q-month').value;
-        const res = await api(`/workday/api/holiday/month?year=${y}&month=${m}`, { auth: false });
+        const res = await api('/workday/api/holiday/month?year=' + y + '&month=' + m, { auth: false });
         const body = await res.json();
         renderTable(document.getElementById('r-month'), body.data);
     };
 
     document.getElementById('b-year').onclick = async () => {
-        const y = document.getElementById('y-year').value;
-        const res = await api(`/workday/api/holiday/year?year=${y}`, { auth: false });
+        const y = document.getElementById('y-year').dataset.value;
+        const res = await api('/workday/api/holiday/year?year=' + y, { auth: false });
         const body = await res.json();
         renderTable(document.getElementById('r-year'), body.data);
     };
 
-    // ===== 管理接口 =====
     document.getElementById('b-crawl').onclick = async () => {
         const el = document.getElementById('r-crawl');
         const res = await api('/workday/api/admin/crawl', { method: 'POST' });
         if (res.status === 401) {
             el.classList.add('show');
-            el.innerHTML = '<div class="meta err">401 未授权：请在本页上方设置正确的 X-API-Token</div>';
+            el.innerHTML = '<div class="meta err">401 未授权：请在上方设置正确的 X-API-Token</div>';
             return;
         }
         await showResult('r-crawl', res);
@@ -302,23 +733,54 @@
 
     document.getElementById('b-export').onclick = async () => {
         const el = document.getElementById('r-export');
-        const y = document.getElementById('e-year').value;
-        const res = await api(`/workday/api/holiday/export?year=${y}`);
+        const y = document.getElementById('e-year').dataset.value;
+        const res = await api('/workday/api/holiday/export?year=' + y);
         if (res.status === 401) {
             el.classList.add('show');
-            el.innerHTML = '<div class="meta err">401 未授权：请在本页上方设置正确的 X-API-Token</div>';
+            el.innerHTML = '<div class="meta err">401 未授权：请在上方设置正确的 X-API-Token</div>';
             return;
         }
         if (!res.ok) { el.classList.add('show'); el.textContent = '导出失败 HTTP ' + res.status; return; }
         const blob = await res.blob();
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `${y}.json`;
+        a.download = y + '.json';
         a.click();
         URL.revokeObjectURL(a.href);
         el.classList.add('show');
-        el.textContent = `已导出 ${y}.json`;
+        el.textContent = '已导出 ' + y + '.json';
     };
+}
+
+// ---- Init ----
+async function init() {
+    initTheme();
+    document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
+    const today = getToday();
+    currentYear = today.year;
+
+    document.getElementById('year-display-btn').textContent = currentYear;
+
+    setupTabs();
+    setupYearSwitcher();
+    setupQuery();
+    setupApiConsole();
+
+    const records = await fetchYearData(currentYear);
+    holidayData = indexHolidayData(records);
+
+    // remove skeleton, show real content
+    document.getElementById('skeleton-hero').style.display = 'none';
+    document.getElementById('hero-section').style.display = '';
+    document.getElementById('skeleton-calendar').style.display = 'none';
+    document.getElementById('calendar-grid').style.display = '';
+
+    renderCalendar(currentYear);
+    renderHero();
+}
+
+document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>

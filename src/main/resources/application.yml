@@ -1,6 +1,7 @@
 server:
   port: 8080
-
+  servlet:
+    context-path: /workday
 spring:
   application:
     name: china-workday
@@ -8,8 +9,12 @@ spring:
     url: jdbc:postgresql://${DB_HOST:127.0.0.1}:${DB_PORT:5432}/${DB_NAME:work}
     username: ${DB_USER:work}
     password: ${DB_PASSWORD:work}
+    hikari:
+      maximum-pool-size: 5
+      connection-timeout: 30000
   sql:
     init:
+      schema-locations: classpath:db/schema.sql
       mode: always
 
 # log4j2 配置请见 log4j2-spring.xml

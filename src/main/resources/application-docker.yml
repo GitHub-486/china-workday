@@ -1,8 +1,4 @@
-﻿server:
-  servlet:
-    context-path: /workday
-
-spring:
+﻿spring:
   datasource:
     url: ${DB_URL:jdbc:postgresql://rushi-postgres:5432/${DB_NAME:rushi}}
     username: ${DB_USER}
