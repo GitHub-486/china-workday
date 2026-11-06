@@ -15,8 +15,8 @@ public class CrawlProperties {
     /** 是否在应用启动时执行一次抓取。 */
     private boolean onStartup = true;
 
-    /** 国务院政策文件库列表页 URL（列表页模式，部分环境被反爬）。 */
-    private String listUrl = "https://www.gov.cn/zhengce/zhengceku/";
+    /** gov.cn 搜索 JSON 接口（回退通道），用于获取节假日通知详情 URL。 */
+    private String listUrl = "https://sousuoht.www.gov.cn/athena/forward/486B5ABFBAD0FF5743F5E82E007EF04DDD6388E7989E9EC9CC7B84917AC81A5F";
 
     /** 官方搜索数据接口（JSON），用于获取「部分节假日安排的通知」详情 URL。 */
     private String searchUrl = "https://sousuo.www.gov.cn/search-gov/data";
@@ -27,17 +27,15 @@ public class CrawlProperties {
     /** 搜索返回条数上限。 */
     private int searchPageSize = 20;
 
+
+
     /** 定时监控 cron（默认每日 08:00）。 */
     private String cron = "0 0 8 * * *";
 
     /** 请求超时（毫秒）。 */
     private int timeoutMillis = 10000;
 
-    /** 列表页标题关键字，用于定位「部分节假日安排的通知」链接。 */
-    private String listTitleKeyword = "部分节假日安排的通知";
 
-    /** 抓取接口简单限频：同一时刻最大并发抓取数。 */
-    private int maxConcurrent = 1;
 
     /** 保留年份向前偏移（含当前年）：即保留 [当前年-该值, 当前年+forwardOffset] 的数据。 */
     private int yearBackOffset = 1;
@@ -109,22 +107,6 @@ public class CrawlProperties {
         this.timeoutMillis = timeoutMillis;
     }
 
-    public String getListTitleKeyword() {
-        return listTitleKeyword;
-    }
-
-    public void setListTitleKeyword(String listTitleKeyword) {
-        this.listTitleKeyword = listTitleKeyword;
-    }
-
-    public int getMaxConcurrent() {
-        return maxConcurrent;
-    }
-
-    public void setMaxConcurrent(int maxConcurrent) {
-        this.maxConcurrent = maxConcurrent;
-    }
-
     public int getYearBackOffset() {
         return yearBackOffset;
     }
@@ -140,4 +122,5 @@ public class CrawlProperties {
     public void setYearForwardOffset(int yearForwardOffset) {
         this.yearForwardOffset = yearForwardOffset;
     }
+
 }

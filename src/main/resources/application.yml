@@ -32,7 +32,6 @@ china-workday:
     search-page-size: 20
     year-back-offset: 1
     year-forward-offset: 1
-    list-url: ${CHINA_WORKDAY_CRAWL_LIST_URL:https://www.gov.cn/zhengce/zhengceku/}
+    list-url: ${CHINA_WORKDAY_CRAWL_LIST_URL:https://sousuoht.www.gov.cn/athena/forward/486B5ABFBAD0FF5743F5E82E007EF04DDD6388E7989E9EC9CC7B84917AC81A5F}
     cron: ${CHINA_WORKDAY_CRAWL_CRON:0 0 8 * * *}
     timeout-millis: 10000
-    max-concurrent: 1

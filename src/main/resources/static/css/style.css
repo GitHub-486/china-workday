@@ -698,12 +698,20 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 12px;
-    cursor: default;
-    position: relative;
-    transition: background 0.15s;
+    cursor: pointer;
+    transition: background 0.15s, box-shadow 0.15s;
     min-height: 32px;
+}
+.day-cell:hover {
+    box-shadow: inset 0 -3px 0 var(--text-muted);
+}
+.day-cell.holiday:hover {
+    box-shadow: inset 0 -3px 0 var(--text-day-holiday);
+}
+.day-cell.workday:hover {
+    box-shadow: inset 0 -3px 0 var(--text-day-workday);
 }
 
 .day-cell .day-num {
@@ -760,6 +768,26 @@ body {
 
 .day-cell.today.holiday {
     box-shadow: 0 0 0 2px var(--border-legend-holiday);
+}
+
+/* Custom tooltip */
+.day-tooltip {
+    position: fixed;
+    padding: 8px 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-card);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--text-body);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    pointer-events: none;
+    z-index: 1000;
+    white-space: nowrap;
+    display: none;
+    line-height: 1.5;
+}
+.day-tooltip.show {
+    display: block;
 }
 
 .day-cell.today.workday {

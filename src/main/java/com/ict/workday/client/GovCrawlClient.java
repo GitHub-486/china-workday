@@ -3,14 +3,22 @@ package com.ict.workday.client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.CookieManager;
+import java.net.CookiePolicy;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.security.KeyFactory;
+import java.security.PublicKey;
+import java.security.spec.X509EncodedKeySpec;
 import java.time.Duration;
+import java.util.Base64;
 import java.util.regex.Pattern;
+import javax.crypto.Cipher;
 
 /**
  * gov.cn 抓取客户端：使用 JDK HttpClient 抓取列表页与详情页 HTML，jsoup 负责 HTML 解析。
@@ -30,14 +38,55 @@ public class GovCrawlClient {
     private static final Pattern GOV_DOMAIN = Pattern.compile(
             "(?i)^(?:[a-z0-9-]+\\.)*gov\\.cn$");
 
+    // gov.cn 搜索页面 JS 内置的 RSA 公钥（用于加密 athenaAppKey）
+    private static final String ATHENA_PUBLIC_KEY =
+            "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCSMhMJQ+XLI7oW0k9Bwufur4Ag40tcsrzT7WZf6Ao0O/hyY1gZtCSYFxkxIZUXjW46j27XSW8IDX1rTJoHaMxHCWsOpTi2W5stybGYZytsY5on8gd8AIaS1d52h9eaS2TFydtJJtE50xHmT0WmoyoinWCuVCOkdCLhh9b9jSdeSQIDAQAB";
+    // 明文 appKey（页面 JS 中固定不变）
+    private static final String ATHENA_APP_KEY_PLAIN = "a46884b2013e4d189f2a8e2d49a23525";
+    private static final String ATHENA_APP_NAME = "%E5%9B%BD%E7%BD%91%E6%90%9C%E7%B4%A2";
+
+    // 缓存 RSA 加密后的 appKey（只在类加载时算一次，避免每次开销）
+    private static final String ATHENA_RSA_APP_KEY;
+
+    public static String getRsaAppKey() {
+        return ATHENA_RSA_APP_KEY;
+    }
+
+    static {
+        String encrypted = "";
+        try {
+            encrypted = rsaEncrypt(ATHENA_PUBLIC_KEY, ATHENA_APP_KEY_PLAIN);
+        } catch (Exception e) {
+            log.error("初始化 RSA appKey 失败", e);
+        }
+        ATHENA_RSA_APP_KEY = encrypted;
+    }
+
+    /**
+     * RSA/ECB/PKCS1Padding 加密，返回 Base64 编码字符串。
+     */
+    private static String rsaEncrypt(String publicKeyPem, String data) throws Exception {
+        byte[] keyBytes = Base64.getDecoder().decode(publicKeyPem);
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+        PublicKey publicKey = kf.generatePublic(spec);
+        Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+        cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+        byte[] encrypted = cipher.doFinal(data.getBytes(StandardCharsets.UTF_8));
+        return Base64.getEncoder().encodeToString(encrypted);
+    }
+
     private final int timeoutMillis;
     private final HttpClient httpClient;
 
     public GovCrawlClient(int timeoutMillis) {
         this.timeoutMillis = timeoutMillis;
+        CookieManager cm = new CookieManager();
+        cm.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofMillis(timeoutMillis))
                 .followRedirects(HttpClient.Redirect.NEVER)
+                .cookieHandler(cm)
                 .build();
     }
 
@@ -79,6 +128,65 @@ public class GovCrawlClient {
         isValidTarget(target);
         HttpResponse<String> response = doGet(target);
         return response.body();
+    }
+
+    /**
+     * 以 GET + athenaHeaders 抓取 JSON（用于获取 athena codeCode）。
+     */
+    public String fetchAthenaGet(String url) {
+        URI target = validateAndGet(url);
+        isValidTarget(target);
+        try {
+            HttpRequest request = HttpRequest.newBuilder(target)
+                    .timeout(Duration.ofMillis(timeoutMillis))
+                    .header("User-Agent", "Mozilla/5.0 (compatible; ChinaWorkdayBot/1.0)")
+                    .header("athenaAppKey", ATHENA_RSA_APP_KEY)
+                    .header("athenaAppName", ATHENA_APP_NAME)
+                    .header("Origin", "https://www.gov.cn")
+                    .GET()
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            log.info("athena GET {} -> {}", url, response.statusCode());
+            if (response.statusCode() != 200) {
+                log.warn("athena GET 非 200: {} body={}", response.statusCode(), response.body());
+                throw new IllegalArgumentException("athena GET 返回 " + response.statusCode());
+            }
+            return response.body();
+        } catch (Exception e) {
+            log.warn("athena GET 失败: {} - {}", url, e.getMessage());
+            throw new IllegalArgumentException("athena GET 失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 以 POST + JSON body + athena 请求头发送搜索请求。
+     * 返回响应体字符串（JSON），由调用方解析。
+     */
+    public String fetchAthenaPost(String url, String jsonBody) {
+        URI target = validateAndGet(url);
+        isValidTarget(target);
+        try {
+            HttpRequest request = HttpRequest.newBuilder(target)
+                    .timeout(Duration.ofMillis(timeoutMillis))
+                    .header("User-Agent", "Mozilla/5.0 (compatible; ChinaWorkdayBot/1.0)")
+                    .header("Content-Type", "application/json;charset=UTF-8")
+                    .header("athenaAppKey", ATHENA_RSA_APP_KEY)
+                    .header("athenaAppName", ATHENA_APP_NAME)
+                    .header("Origin", "https://www.gov.cn")
+                    .header("Referer", "https://www.gov.cn/zhengce/xxgk/index.htm")
+                    .method("POST", HttpRequest.BodyPublishers.ofString(jsonBody))
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            log.info("athena POST {} -> {} ({}字节)", url, response.statusCode(), response.body().length());
+            if (response.statusCode() != 200) {
+                log.warn("athena POST 非 200: {} body={}", response.statusCode(), response.body());
+                throw new IllegalArgumentException("athena POST 返回 " + response.statusCode());
+            }
+            return response.body();
+        } catch (Exception e) {
+            log.warn("athena POST 失败: {} - {}", url, e.getMessage());
+            throw new IllegalArgumentException("athena POST 失败: " + e.getMessage());
+        }
     }
 
     private HttpResponse<String> doGet(URI uri) {

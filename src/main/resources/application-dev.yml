@@ -1,6 +1,4 @@
-﻿
-
-spring:
+﻿spring:
   datasource:
     url: ${DB_URL:jdbc:postgresql://192.168.81.100:5432/${DB_NAME:work}}
     username: ${DB_USER:work}

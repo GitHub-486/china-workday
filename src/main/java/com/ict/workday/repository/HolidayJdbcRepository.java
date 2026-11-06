@@ -4,12 +4,14 @@ import com.ict.workday.domain.DayType;
 import com.ict.workday.domain.HolidayRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,9 +47,15 @@ public class HolidayJdbcRepository implements HolidayRepository {
 
     @Override
     public void upsert(HolidayRecord record) {
-        Integer exists = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM holiday WHERE holiday_date = ?", Integer.class, record.getHolidayDate());
-        if (exists != null && exists > 0) {
+        try {
+            jdbcTemplate.update(
+                    """
+                    INSERT INTO holiday (holiday_date, holiday_name, day_type, year, source, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                    """,
+                    record.getHolidayDate(), record.getHolidayName(), record.getDayType().name(),
+                    record.getYear(), record.getSource(), Timestamp.valueOf(record.getCreatedAt().withNano(0)));
+        } catch (DuplicateKeyException e) {
             jdbcTemplate.update(
                     """
                     UPDATE holiday SET
@@ -57,14 +65,6 @@ public class HolidayJdbcRepository implements HolidayRepository {
                     record.getHolidayName(), record.getDayType().name(),
                     record.getYear(), record.getSource(), Timestamp.valueOf(record.getCreatedAt().withNano(0)),
                     record.getHolidayDate());
-        } else {
-            jdbcTemplate.update(
-                    """
-                    INSERT INTO holiday (holiday_date, holiday_name, day_type, year, source, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                    """,
-                    record.getHolidayDate(), record.getHolidayName(), record.getDayType().name(),
-                    record.getYear(), record.getSource(), Timestamp.valueOf(record.getCreatedAt().withNano(0)));
         }
     }
 
@@ -73,12 +73,10 @@ public class HolidayJdbcRepository implements HolidayRepository {
         if (records == null || records.isEmpty()) {
             return 0;
         }
-        int count = 0;
         for (HolidayRecord r : records) {
             upsert(r);
-            count++;
         }
-        return count;
+        return records.size();
     }
 
     @Override
@@ -117,6 +115,6 @@ public class HolidayJdbcRepository implements HolidayRepository {
 
     @Override
     public void truncate() {
-        jdbcTemplate.update("DELETE FROM holiday");
+        jdbcTemplate.update("TRUNCATE TABLE holiday");
     }
 }
