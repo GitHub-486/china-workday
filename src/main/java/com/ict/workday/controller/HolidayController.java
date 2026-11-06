@@ -3,7 +3,9 @@ package com.ict.workday.controller;
 import com.ict.workday.domain.HolidayRecordDTO;
 import com.ict.workday.domain.WorkdayResult;
 import com.ict.workday.service.HolidayService;
+import com.ict.workday.service.JsonExportService;
 import com.ict.workday.web.ApiResponse;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -16,9 +18,11 @@ import java.util.List;
 public class HolidayController {
 
     private final HolidayService holidayService;
+    private final JsonExportService jsonExportService;
 
-    public HolidayController(HolidayService holidayService) {
+    public HolidayController(HolidayService holidayService, JsonExportService jsonExportService) {
         this.holidayService = holidayService;
+        this.jsonExportService = jsonExportService;
     }
 
     @GetMapping("/is-workday")
@@ -35,5 +39,10 @@ public class HolidayController {
     @GetMapping("/year")
     public ApiResponse<List<HolidayRecordDTO>> year(@RequestParam("year") Integer year) {
         return ApiResponse.ok(holidayService.getYearInfo(year));
+    }
+
+    @GetMapping("/export")
+    public ResponseEntity<byte[]> export(@RequestParam("year") Integer year) {
+        return jsonExportService.exportYear(year);
     }
 }

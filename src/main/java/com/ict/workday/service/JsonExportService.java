@@ -56,6 +56,7 @@ public class JsonExportService {
             day.put("holidayDate", r.getHolidayDate().toString());
             day.put("holidayName", r.getHolidayName());
             day.put("dayType", r.getDayType().name());
+            day.put("typeName", r.getDayType().getDisplayName());
             day.put("year", r.getYear());
             days.add(day);
         }

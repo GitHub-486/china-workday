@@ -48,6 +48,7 @@
     --text-day-weekend: #bbb;
     --text-day-holiday: #e74c3c;
     --text-day-workday: #e67e22;
+    --text-day-lunar: #999;
     --text-legend-item: #777;
     --text-query-label: #999;
     --text-query-value: #1a1a2e;
@@ -146,6 +147,7 @@
     --text-day-weekend: #484f58;
     --text-day-holiday: #f1948a;
     --text-day-workday: #e67e22;
+    --text-day-lunar: #484f58;
     --text-legend-item: #8b949e;
     --text-query-label: #8b949e;
     --text-query-value: #c9d1d9;
@@ -486,6 +488,12 @@ body {
     letter-spacing: 1px;
 }
 
+.hero-lunar {
+    font-size: 13px;
+    color: var(--hero-text-countdown);
+    margin-top: 2px;
+}
+
 .hero-date-large {
     font-size: 32px;
     font-weight: 700;
@@ -714,6 +722,11 @@ body {
     max-width: 28px;
 }
 
+.day-cell .day-label.lunar {
+    color: var(--text-day-lunar);
+    font-weight: 400;
+}
+
 .day-cell.other-month {
     opacity: 0.2;
 }
@@ -751,6 +764,24 @@ body {
 
 .day-cell.today.workday {
     box-shadow: 0 0 0 2px var(--border-legend-workday);
+}
+
+/* Back to Today */
+.back-today-btn {
+    padding: 5px 14px;
+    background: var(--btn-call-bg);
+    color: var(--btn-call-text);
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.2s;
+    white-space: nowrap;
+}
+.back-today-btn:hover {
+    background: var(--btn-call-hover);
 }
 
 /* Legend */
@@ -1095,6 +1126,16 @@ body {
 .api-section th { background: var(--bg-table-header); color: var(--text-body); }
 .api-section td { color: var(--text-body); }
 .api-section select { background: var(--bg-card); color: var(--text-input); }
+
+.tool-result { margin-top: 16px; padding: 16px; border-radius: 8px; background: var(--bg-query-result); }
+.tool-result .query-result-item { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; }
+.tool-result .query-result-item .label { color: var(--text-query-label); }
+.tool-result .query-result-item .value { font-weight: 600; color: var(--text-query-value); }
+
+.card-summary { cursor: pointer; font-size: 15px; font-weight: 700; color: var(--text-body); padding: 4px 0; user-select: none; }
+.card-summary:hover { opacity: 0.8; }
+details.card.admin-tools { padding: 16px 24px; }
+details.card.admin-tools[open] { padding-bottom: 8px; }
 
 /* Responsive */
 @media (max-width: 900px) {

@@ -52,7 +52,7 @@ mvn spring-boot:run -Dspring-boot.run.profiles=dev
 
 ## 管理页面
 
-内置管理页面位于 `src/main/resources/static/index.html`，主要分为三个功能区域：
+内置管理页面位于 `src/main/resources/static/index.html`，主要分为二个功能区域：
 
 ### 日历视图
 
@@ -63,11 +63,7 @@ mvn spring-boot:run -Dspring-boot.run.profiles=dev
 
 点击月份标题展开当月节假日明细表格，可查看具体日期、节日名称和类型。
 
-### 日期查询
-
-选择一个日期，快速判断当天是否为上班日。结果显示日期、星期、上班/休息状态和节日名称（如有）。
-
-### 接口调试台
+### 工具台
 
 直接调用后台 API 并查看原始 JSON 响应，方便开发和测试。包含：
 
@@ -197,11 +193,7 @@ mvn test
 
 ![日历视图](docs/images/public.calendar.png)
 
-*日期查询：选择日期判断上班日*
-
-![日期查询](docs/images/public-query.png)
-
-*接口调试台：API 调用与响应查看*
+*工具台：API 调用与响应查看*
 
 ![接口调试台](docs/images/admin-panel.png)
 
