@@ -1,5 +1,6 @@
 package com.ict.workday.repository;
 
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -19,7 +20,7 @@ public class CrawlUrlJdbcRepository implements CrawlUrlRepository {
     public void record(String url, int year) {
         try {
             jdbcTemplate.update("INSERT INTO crawl_url (url, year) VALUES (?, ?)", url, year);
-        } catch (Exception e) {
+        } catch (DuplicateKeyException e) {
             // 唯一约束冲突：已记录过，幂等忽略
         }
     }
@@ -33,6 +34,6 @@ public class CrawlUrlJdbcRepository implements CrawlUrlRepository {
 
     @Override
     public void truncate() {
-        jdbcTemplate.update("DELETE FROM crawl_url");
+        jdbcTemplate.update("TRUNCATE TABLE crawl_url");
     }
 }

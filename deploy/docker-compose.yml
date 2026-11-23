@@ -29,7 +29,7 @@ services:
     build:
       context: ..
       dockerfile: deploy/Dockerfile
-    image: china-workday:1.0.2
+    image: china-workday:1.0.3
     container_name: china-workday
     restart: unless-stopped
     depends_on:

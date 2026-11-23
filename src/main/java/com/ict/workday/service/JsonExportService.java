@@ -1,47 +1,68 @@
 package com.ict.workday.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.ict.workday.domain.HolidayRecord;
 import com.ict.workday.repository.HolidayRepository;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
-/**
- * 按年份导出 JSON（供引用方放入自身 resources 离线使用）。
- * 生成 {year}.json 数据，days 中记录字段与查询接口完全一致。
- */
 @Service
 public class JsonExportService {
 
     private final HolidayRepository repository;
+    private final ObjectMapper objectMapper;
 
     public JsonExportService(HolidayRepository repository) {
         this.repository = repository;
+        this.objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
     }
 
-    public java.util.Map<String, Object> export(int year) {
+    public ResponseEntity<byte[]> exportYear(int year) {
+        if (year < 1900 || year > 2100) {
+            throw new IllegalArgumentException("year 必须为 4 位年份（1900-2100）");
+        }
         List<HolidayRecord> records = repository.findByYear(year);
-        return buildResult(year, records);
+        Map<String, Object> data = buildResult(year, records);
+        try {
+            byte[] bytes = objectMapper.writeValueAsString(data).getBytes(StandardCharsets.UTF_8);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + year + ".json")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(bytes);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public java.util.Map<String, Object> exportMonth(int year, int month) {
+    public Map<String, Object> exportMonth(int year, int month) {
         List<HolidayRecord> records = repository.findByMonth(year, month);
         return buildResult(year, records);
     }
 
-    private java.util.Map<String, Object> buildResult(int year, List<HolidayRecord> records) {
-        java.util.List<java.util.Map<String, Object>> days = new java.util.ArrayList<>();
+    private Map<String, Object> buildResult(int year, List<HolidayRecord> records) {
+        List<Map<String, Object>> days = new ArrayList<>();
         for (HolidayRecord r : records) {
-            java.util.Map<String, Object> day = new java.util.LinkedHashMap<>();
+            Map<String, Object> day = new LinkedHashMap<>();
             day.put("holidayDate", r.getHolidayDate().toString());
             day.put("holidayName", r.getHolidayName());
             day.put("dayType", r.getDayType().name());
+            day.put("typeName", r.getDayType().getDisplayName());
             day.put("year", r.getYear());
             days.add(day);
         }
-        java.util.Map<String, Object> root = new java.util.LinkedHashMap<>();
+        Map<String, Object> root = new LinkedHashMap<>();
         root.put("year", year);
-        root.put("generatedAt", java.time.LocalDate.now().toString());
+        root.put("generatedAt", LocalDate.now().toString());
         root.put("source", "gov.cn");
         root.put("days", days);
         return root;

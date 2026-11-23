@@ -53,8 +53,9 @@ public class GovDetailParser {
         if (html == null || html.isBlank()) {
             return records;
         }
+        LocalDateTime now = LocalDateTime.now();
         String text = toText(html);
-        parseSegments(text, year, records, seen);
+        parseSegments(text, year, now, records, seen);
         records.sort((a, b) -> a.getHolidayDate().compareTo(b.getHolidayDate()));
         return records;
     }
@@ -63,7 +64,7 @@ public class GovDetailParser {
      * 按节日小标题把正文切分为多个小节，每节用各自节日名解析。
      * 段间以「。；;\n」切句，放假句标 HOLIDAY、上班句标 WORKDAY。
      */
-    private void parseSegments(String text, int year,
+    private void parseSegments(String text, int year, LocalDateTime now,
                                List<HolidayRecord> records, Set<LocalDate> seen) {
         Matcher fm = FESTIVAL_SEG.matcher(text);
         List<int[]> bounds = new ArrayList<>();
@@ -74,25 +75,25 @@ public class GovDetailParser {
         }
         if (bounds.isEmpty()) {
             // 无法按小标题分段（老格式），整段用兜底名称
-            parseSegment(text, year, "节假日", records, seen);
+            parseSegment(text, year, now, "节假日", records, seen);
             return;
         }
         for (int i = 0; i < bounds.size(); i++) {
             int from = bounds.get(i)[1];
             int to = (i + 1 < bounds.size()) ? bounds.get(i + 1)[0] : text.length();
             String segText = text.substring(from, Math.min(to, text.length()));
-            parseSegment(segText, year, names.get(i), records, seen);
+            parseSegment(segText, year, now, names.get(i), records, seen);
         }
     }
 
-    private void parseSegment(String segText, int year, String festival,
+    private void parseSegment(String segText, int year, LocalDateTime now, String festival,
                               List<HolidayRecord> records, Set<LocalDate> seen) {
         String[] sentences = SENTENCE_SPLIT.split(segText);
         for (String sentence : sentences) {
             if (sentence.contains("放假")) {
-                collectHolidays(sentence, year, festival, records, seen);
+                collectHolidays(sentence, year, now, festival, records, seen);
             } else if (sentence.contains("上班")) {
-                collectWorkdays(sentence, year, festival, records, seen);
+                collectWorkdays(sentence, year, now, festival, records, seen);
             }
         }
     }
@@ -113,7 +114,7 @@ public class GovDetailParser {
     }
 
     /** 从「放假」句中提取区间（含省略月份的结束日期），全部标 HOLIDAY。 */
-    private void collectHolidays(String sentence, int year, String festival,
+    private void collectHolidays(String sentence, int year, LocalDateTime now, String festival,
                                  List<HolidayRecord> records, Set<LocalDate> seen) {
         Set<LocalDate> covered = new HashSet<>();
         Matcher rm = RANGE.matcher(sentence);
@@ -135,7 +136,7 @@ public class GovDetailParser {
                 LocalDate cur = start;
                 while (!cur.isAfter(end)) {
                     covered.add(cur);
-                    addRecord(cur, festival, DayType.HOLIDAY, records, seen);
+                    addRecord(cur, now, festival, DayType.HOLIDAY, records, seen);
                     cur = cur.plusDays(1);
                 }
             } catch (Exception e) {
@@ -149,8 +150,8 @@ public class GovDetailParser {
             int day = Integer.parseInt(dm.group(2));
             try {
                 LocalDate d = LocalDate.of(year, month, day);
-                if (!covered.contains(d)) {
-                    addRecord(d, festival, DayType.HOLIDAY, records, seen);
+                    if (!covered.contains(d)) {
+                    addRecord(d, now, festival, DayType.HOLIDAY, records, seen);
                 }
             } catch (Exception e) {
                 log.warn("忽略无法解析的放假日期: {}", dm.group());
@@ -159,27 +160,27 @@ public class GovDetailParser {
     }
 
     /** 从「上班」句中提取所有日期，全部标 WORKDAY（支持并列多个上班日）。 */
-    private void collectWorkdays(String sentence, int year, String festival,
+    private void collectWorkdays(String sentence, int year, LocalDateTime now, String festival,
                                  List<HolidayRecord> records, Set<LocalDate> seen) {
         Matcher dm = DATE.matcher(sentence);
         while (dm.find()) {
             int month = Integer.parseInt(dm.group(1));
             int day = Integer.parseInt(dm.group(2));
             try {
-                addRecord(LocalDate.of(year, month, day), festival + "调休", DayType.WORKDAY, records, seen);
+                addRecord(LocalDate.of(year, month, day), now, festival + "调休", DayType.WORKDAY, records, seen);
             } catch (Exception e) {
                 log.warn("忽略无法解析的调休上班日期: {}", dm.group());
             }
         }
     }
 
-    private void addRecord(LocalDate date, String name, DayType type,
+    private void addRecord(LocalDate date, LocalDateTime now, String name, DayType type,
                            List<HolidayRecord> records, Set<LocalDate> seen) {
         if (date == null || !seen.add(date)) {
             return;
         }
         HolidayRecord r = new HolidayRecord(date, name, type, date.getYear(), SOURCE);
-        r.setCreatedAt(LocalDateTime.now());
+        r.setCreatedAt(now);
         records.add(r);
     }
 }
