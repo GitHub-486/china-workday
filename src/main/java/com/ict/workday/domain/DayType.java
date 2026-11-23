@@ -5,8 +5,18 @@ package com.ict.workday.domain;
  * HOLIDAY 放假休息；WORKDAY 调休上班。
  */
 public enum DayType {
-    HOLIDAY,
-    WORKDAY;
+    HOLIDAY("放假"),
+    WORKDAY("调休上班");
+
+    private final String displayName;
+
+    DayType(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
 
     public static DayType from(String value) {
         if (value == null) {

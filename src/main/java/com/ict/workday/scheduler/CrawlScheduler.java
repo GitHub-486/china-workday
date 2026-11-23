@@ -37,7 +37,7 @@ public class CrawlScheduler {
         }
         log.info("应用启动，开始首次抓取...");
         try {
-            log.info(crawlService.crawlOnce(false));
+            log.info(crawlService.crawlOnce(false, false));
         } catch (Exception e) {
             log.warn("启动抓取异常（不影响服务）: {}", e.getMessage());
         }
@@ -53,7 +53,7 @@ public class CrawlScheduler {
         }
         log.info("定时抓取开始...");
         try {
-            log.info(crawlService.crawlOnce(false));
+            log.info(crawlService.crawlOnce(false, false));
         } catch (Exception e) {
             log.warn("定时抓取异常（不影响服务）: {}", e.getMessage());
         }
